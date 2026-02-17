@@ -205,5 +205,3 @@ limite em 7 vezes, a compra de "Engine boost" no "shop", quando for clicado para
 No background, faça aparecer aleatóriamente, durante todo o jogo, mas em quantidade 80% menos plano de fundo em movimento de galaxias e nebulosas, com cores variadas e aleatórias.
 
 
-
-
