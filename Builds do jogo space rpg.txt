@@ -1,0 +1,209 @@
+>criar um jogo de nave estilo rpg
+>quando clico no botão start o jogo não começa
+>onde estão os arquivos para poder rodar?
+>Os arquivo não tem o "peso" suficiente para rodar o jogo (3Kb apenas) e o jogo ainda não está rodando depois de apertar o "start mission"
+
+>implemente melhorias no jogo:
+Fundo em movimento (simulação das estrelas passando).
+A cada 10 levels, aumentar o número de inimigos.
+No "shop", acrescentar compra de nova arma e/ou munições especiais.
+
+>implemente melhorias no jogo:
+Após o level 30, fazer com 5% dos inimigos presentes na tela te seguir sem ficar para "trás"
+No "shop", acrescentar o tiro triplo e o tiro seguidor.
+No level 60, fazer com que 5% dos inimigos presentes na tela atire em você.
+
+>Faça a seguinte correção:
+No tiro seeguidor, faça  seguinte dowgrade: Diminua a velocidade dos tiros em 30% e faça com que apenas 50% dos tiros seja de fato seguidor, deixando os outros 50% indo em linha reta.
+
+> implemente melhorias no jogo:
+No level 10, fazer com que 5% dos inimigos presentes na tela atire em você.
+Após o level 30, fazer com 5% dos inimigos presentes na tela te seguir sem ficar para "trás"
+No nível 50 faça com que aconteça a combinação dos dois itens anteriores.
+Após o level 70, pare de aumentar o número de inimigos" mantendo um ultimo valor constante
+Após o nível 80, faça com que os inimigos dobrem a quantidade e a velocidade dos tiros.
+Após o level 100, faça com que os inimigos seguidores ande 2x mais rápido.
+Configure um botão para poder alternar o tipo de tiro já adquirido
+No shop, acrescente o tiro obliterador(que causa uma explosão em onda circular que acaba instantaneamente com o inimigos até então na tela, após a onda alcançar os mesmo.  Faça valer 2500 pontos, limitando a apanas 3 tiros.
+Faça com que o tiro triplo fique ligeiramente "divergente".
+
+>implemente melhorias no jogo:
+Coloque a chance de 1 para 20 de, ao matar um inimigo presente na tela, dropar um "nuke" (obliterador), adquirindo o mesmo quando tocar o item perdido no "espaço"
+No level 10, fazer com que 5% dos inimigos presentes na tela atire em você.
+No level 20, fazer com que 10% dos inimigos presentes na tela atire em você.
+Após o level 30, fazer com 5% dos inimigos presentes na tela te seguir sem ficar para "trás"
+Após o level 40, fazer com 12% dos inimigos presentes na tela te seguir sem ficar para "trás"
+No nível 50 faça com que aconteça a combinação dos dois itens anteriores, em 7%.
+Após o level 70, pare de aumentar o número de inimigos" mantendo um ultimo valor constante
+Após o nível 80, faça com que os inimigos que atiram dobrem a quantidade e a velocidade dos tiros.
+Após o level 100, faça com que os inimigos seguidores ande 2x mais rápido.
+
+>implemente melhorias no jogo:
+Após o level 30, Coloque a chance de 1 para 100 de, ao matar um inimigo presente na tela, dropar uma "armadura superior" (aumento de vida máxima em 30%), adquirindo o mesmo quando tocar o item perdido no "espaço" E após adquirir, zerar a chance de um novo drop. Quando adquirir esse aumento de vida máximo, mudar o design do minha nave, com aspecto mais proximo de uma verdadeira nave
+Após o level 40, fazer com 8% dos inimigos presentes na tela te seguir sem ficar para "trás"
+No nível 50 faça com que aconteça a combinação dos dois itens anteriores(inimigos anteriores), em 5%.
+Após o level 70 diminua a chance de dropar um "nuke" (obliterador), adquirindo o mesmo quando tocar o item perdido no "espaço" de "1/20", para de "1/60"
+Após o level 90, Coloque a chance de 1 para 120 de, ao matar um inimigo presente na tela, dropar uma segunda "armadura superior" (aumento de vida máxima em 50%), adquirindo o mesmo quando tocar o item perdido no "espaço" E após adquirir, zerar a chance de um novo drop. Quando adquirir esse aumento de vida máximo, mudar novamente o design do minha nave, com aspecto ainda mais proximo de uma verdadeira nave e mais "parruda".
+Após o level 120 diminua a chance de dropar um "nuke" (obliterador), adquirindo o mesmo quando tocar o item perdido no "espaço" de 1/60, para de 1/120 e fazer com que 14% dos inimigos presentes na tela te seguir sem ficar para "trás"
+Após o level 150, no "shop", acrescentar o tiro de laser (linha continua) com tempo de carregamento de 2s a cada 10s de tiro continuo.
+Após o level 300, faça com que os inimigos seguidores ande 3x mais rápido, e os inimigos comuns dê o dobro de dano na colisão
+Após o level 500, decrete o fim do jogo com vitoria.
+
+>implemente melhorias no jogo:
+Após o level 30, Aumente a chance que era de 1/100 para 1/50 ao matar um inimigo presente na tela, dropar uma "armadura superior" (aumento de vida máxima em 50%), adquirindo o mesmo quando tocar o item perdido no "espaço" E após adquirir, zerar a chance de um novo drop. Quando adquirir esse aumento de vida máximo, mudar o design do minha nave, com aspecto mais proximo de uma verdadeira nave
+No nível 50 diminua os inimigos feitos pela combinação dos dois itens anteriores(inimigos anteriores), para 3%
+
+>implemente melhorias no jogo:
+Refaça o tiro laser de modo que atire continuamente quando apertado o botão do mouse e coloque para comprar a partir do nível 50 por 3000 pontos, além disso deixe no mesmo tamanho já feito
+
+>implemente melhorias no jogo:
+coloque tiro laser para comprar a partir do nível 250 por 5000 pontos, além disso deixe no mesmo tamanho já feito
+
+>implemente melhorias no jogo:
+Altere para os inimigos seguidores e combinados andar 3x mais rápido a partir do level 150, deixe o dano padrão
+Após o level 300, faça com que os inimigos seguidores e combinados ande 5x mais rápido,e atire 3x mais rápido e os inimigos comuns dê o dobro de dano na colisão
+Após o level 400, faça com que os inimigos seguidores e combinados ande 7x mais rápido,e atire 4x mais rápido e os inimigos comuns dê 2,5x de dano na colisão
+No level 500 parar o jogo, mostrar "você venceu a guerra espacial na tela em fonte grande e dê game over
+
+>implemente melhorias no jogo:
+No level 5, fazer com que 5% dos inimigos presentes na tela exploda tendo um curto raio de alcançe e dando dano de 30HP.
+Mostre a pontuação no canto superior direito da tela. e mostre o valor do danos recebidos tanto do inimigo quanto o seu, em números pequenos proximo do alvo.
+
+> implemente melhorias no jogo:
+No level 5, Aumente o raio de alcance do 5% dos inimigos presentes na tela que explodem para 240px.
+No level 100 crie um inimigo gigante(boss) com muita vida e padrões de tiro diferente, faça com que a vida dele apareça permanentemente, inclusive mostrando a vida diminuindo. Quando o boss aparecer, zerar o aparecimento de todos os outros inimigos, até derrotar lo
+No level 300 crie um inimigo gigante(boss) com o dobro de vida em relação ao anterior, além de forma e padrões de tiro diferente e com quantidade e velocidade aumentada em 30% em relação ao boss anterior também em relação ao anterior, faça com que a vida dele apareça permanentemente, inclusive mostrando a vida diminuindo. Quando o boss aparecer, reduzir em 1/10 o aparecimento de todos os outros inimigos, até derrotar lo
+No level 400, torne a aumentar o número de inimigos a cada 30 levels até o nível 500.
+Decrete na tela vitoria da guerra espacial ao chegar no nível 500, parando o jogo.
+Quando der "Mission failed, mostrar além da pontuação o level que chegou e os upgrades feitos até então antes da derrota. 
+
+
+> implemente melhorias no jogo:
+
+Cancele o aparecimento do primeiro boss no nível 100, faça aparecer no nível 50, e aumente em 100% a vida e o tamanho da fonte da indicação da vida dele. Quando o boss aparecer, zerar o aparecimento de todos os outros inimigos, até derrotar lo.
+Cancele o aparecimento do segundo boss no nível 300, faça aparecer no nível 100(com as mesmas caracteristicas anteriores, com exceção da vida que precisa ter 50% de vida a mais em relação ao primeiro boss.
+Aplique exceção aos bosses, entre os inimigos aleatórios que explodem e somem.
+No level 300 crie um terceiro inimigo gigante(boss) com o dobro de vida em relação ao anterior, além de forma e padrões de tiro diferente em relação aos dois bosses anteriores e com quantidade e velocidade aumentada em 20% em relação ao boss anterior também em relação ao anterior, faça com que a vida dele apareça permanentemente, inclusive mostrando a vida diminuindo. Quando o boss aparecer, reduzir em 1/10 o aparecimento de todos os outros inimigos, até derrotar lo
+
+No level 490 crie um Quarto inimigo gigante(boss), na verdade dois bosses gemeos com o 20% de vida em relação ao ultimo boss, além de forma e padrões de tiro diferente em relação aos três bosses anteriores e com quantidade e velocidade aumentada em 5% em relação ao boss anterior também em relação ultimo boss, faça com que a vida dele apareça permanentemente, inclusive mostrando a vida diminuindo. Quando o boss aparecer, zerar o aparecimento de todos os outros inimigos, até derrotar lo
+
+Quando der "Mission failed,ou quando decretar vitoria da guerra espacial, retirar a mostra dos upgrades, apenas mostre o ultimo nível alcançado
+
+> implemente melhorias no jogo:
+Faça os bosses serem 100% imunes ao "obliterador"
+Aumente a ressistência(vida máxima) dos inimigos em 10% a cada 90 levels, a partir do level 110
+No background, faça aparecer aleatóriamente, a cada 20 levels plano de fundo em movimento de galaxias e nebulosas, com cores variadas e aleatórias.
+Após ter a vida reduzida para 30HP, coloque a chance de 1/40 de ao matar um inimigo, dropar um "escudo" (uma aura circular, de raio 90px, ligeiramente transparente)adquirindo o mesmo quando tocar o item perdido no "espaço" e ativar um imunidade de 100% de dano durante 5s e reduzir para 50% de imunidade durante mais 5s, se encerrando logo em seguida.
+
+
+> implemente melhorias no jogo:
+Os bosses que tem tiro seguidor, esses tiros irão desaparecer também quando o boss for derrotado, além disso fazer com que o tiro seguidor dos bosses sigam por 8s apenas.
+Mude o drop "escudo" para aparecer após ter a vida reduzida para 50HP, e mude a chance de aparecer para 1/20 de ao matar um inimigo e mantenha as demais caracteristicas desse drop.
+A partir do level 30, coloque a chance de 1/40 de ao matar um inimigo, dropar um "item de cura/conserto parcial" que fornece 30hp de vida adquirindo o mesmo quando tocar o item perdido no "espaço". Após adquirior item, pausar o spawn de outro desse item durante 2 minutos
+
+> implemente melhorias no jogo
+Aumente o HP do primeiro boss(destruidor) para 6000, do segundo boss(aniquilador), para 50000, do terceiro boss(Devastador) para 400000 e do ultimo boss (gemeos alfa e beta) para 2000000(cada um).
+Faça com que o ultimo boss(gemeos) tenha movimentos independentes
+Faça com que o terceira bosso tenha movimentos alternado(linear na horizonte e também ligeiramente circular(semi circular), alcançando o centro da tela como raio de alcançe do movimento.
+No shop, crie o "tiro quintuplo"(ligeiramente divergente também), com 40% do tiros sendo seguidor, a partir do nível 200, por 3000 créditos
+
+
+> reparos
+verifique o item "tiro quintuplo", no shop. Ele está atirando laser a invés de soltar 5 tirou simultaneos em divergencia
+
+> implementar melhorias no jogo
+gere um novo arquivo a parte do "game_bundled", bootavel, somente para testar itens do shop, armas, em inimigo imovel com HP de 10000, nesse arquivo todos os itens do "shop" devem estar liberados para utilizar para testes
+
+> implemente melhorias:
+somente no testing_bundled: No shop, crie o "tiro de arco" - a forma da "bala" seria um semi circulo com 50 px de raio e com o dobro de dano base, estando liberado para adquirir e utilizar
+somente no testing_bundled: remodele a forma do "tiro de arco", tendo um formato de uma lua crescentem e aumente o raio gradativamente conforme vai se afastando do player a uma razão de 10px para cada 30px de distancia de afastamento 
+somente no testing_bundled: remodele a forma do "tiro de arco", tendo um formato de uma lua crescente, porém deixe mais fino, aumente o raio gradativamente conforme vai se afastando do player a uma razão de 3px para cada 30px de distancia de afastamento e também faça com que dê dano mesmo se qualquer parte do arco tocar no inimigo não apenas no meio do arco
+somente no testing_bundled: remodele a forma do "tiro de arco", mantendo o formato e a colisão de área total, aumente o raio gradativamente conforme vai se afastando do player a uma razão de 5px para cada 30px de distancia de afastamento e também implemente uma chance de 1/100 de ao acertar um tiro, causar uma "explosão circular"( nos mesmo moldes da explosão de um inimigo comum do jogo) mas com o raio de explosão de 480px e dando dano 5x mais em relação ao dano base em inimigos que estiverem no alcance de raio, faça com o que o player seja imune a essa explosão
+remodele a forma do "tiro de arco", mantendo todas as caracterisca já colocadas, altera a chance para 1/50 de ao acertar um tiro, causar uma "explosão circular"( nos mesmo moldes da explosão de um inimigo comum do jogo) mas com o raio de explosão de 720px e dando dano 5x mais em relação ao dano base em inimigos que estiverem no alcance de raio, faça com o que o player seja imune a essa explosão. Ápós terminada essa alteração, implemente esse tiro no arquivo principal(game_bundled), fazendo aparecer no "shop" a partir do Nível 400. Nomeie esse tiro de "Endgame redmoon-gun"
+
+
+> implementar melhorias no jogo
+
+No tiro "Endgame redmoon-gun", aumente para 4x mais dano em relação ao dano base, aumente também para 10x mais em relação ao dano base o dano da "explosão circular".
+No tiro "Endgame redmoon-gun", mude a cor da "explosão circular" para azul ciano.
+No tiro "Endgame redmoon-gun", aplique a chance de 1/4 de um tiro neutralizar o tiro do inimigo, exceto se o tiro for seguidor, quando se colidirem
+Diminua o HP do boss "gemeos alfa e beta" para 1600000 cada um. 
+Quando o boss "gemeos alfa e beta" aparecer, aletere para reduzir o aparecimento de todos os outros inimigos em 1/10, até derrotar lo
+A partir do nível 450, aumente o drop de creditos quando um inimigo morrer em 200%
+A partir do nível 5, crie um "sub-boss" com dobro de tamanho de um inimigo comum, que atire e siga, na velocidade padrão e que tenha um HP de 500. Além disso, quando morrer, libere 500 crédito e quando o boss aparecer, reduzir em 1/2 o aparecimento de todos os outros inimigos, até derrotar lo
+Quando tiver reduzido a 40% da vida do boss "gemeos alfa e beta", fazer com que um dos bosses passe a se movimentar verticalmente para baixo(descendo até 80% da tela), aleatóriamente, esse movimento específico, precisar ter uma velocidade 20% menor em relação ao se padrão, e o outro boss aplique a chance de atirar tiro seguidor em 20% dos seus tiros, com uma velocidade 50% menor em relão ao seu tiro padrão
+Quando tiver reduzido a 30% da vida do boss "Devastador", aumento o raio de alcance do seu movimento semi circular para 3/4 da tela.
+Aumente para 800 o HP do sub boss e retire a recompensa de 500 créditos ao matar o mesmo
+
+
+> Balanceamento
+
+Diminua para 500 0 HP do sub boss e a partir do level 20 aplicar a chance de aparecer apenas um desse inimigo de 1/100, além disso para esse inimigo não aplicar velocidade progressiva(mantenha sempre a velocidade base)
+Adicione a recompensa de 200 créditos ao matar o sub boss.
+Mude o drop "escudo" para aparecer após ter a vida reduzida para 50HP, e mude a chance de aparecer para 1/10 de ao matar um inimigo e alterar a imunidade de 100% de dano agora durante 20s se encerrando logo em seguida.
+
+
+> Balanceamento e melhorias
+
+Altere para o "sub boss" aparecer a partir do level 5 aplicar e mantendo as demias caracteristicas
+Reveja no shop os itens "tiro quintuplo" e o "tiro laser", parece que quando compra um, está vindo o outro automaticamente, ou vem o que não foi comprado
+No tiro "Endgame redmoon-gun", faça com que 1/4 dos tiros seja seguidor.
+Declare "você venceu a guerra espacial" somente quando derrotar o "gemeos alfa e beta", cancele a declaração quando chegar no nível 500!
+Após o level 300, aumente a chance de spawn dos inimigos seguidores e combinados para 15% e 
+Após o level 400, os inimigo que atiram, passem a soltar tiros duplos.
+Reduza a divergencia dos tiros triplos em 40%
+
+
+> Balanceamento e melhorias
+
+Quando tiver reduzido a 30% da vida do boss "destruidor", duplique a densidade do tiros.
+Quando tiver reduzido a 30% da vida do boss "aniquilador", Aumente a velocidade e o tempo do tiro seguidor em 70%
+A partir do nível 5, faça com que os inimigos comuns presentes na tela adquire chance de 1/50 de atirar apenas uma vez em direção aleatória
+A partir do nível 60, faça com que os inimigos comuns presentes na tela adquire chance de 1/20 de ampliar 4x mais sua oscilação horizontal.
+No tiro "Endgame redmoon-gun", quando acontecer a explosão circular, aumente para três explosões, acontecendo em locais aleatórios na tela.
+
+
+
+> Balanceamento e melhorias
+Quando tiver reduzido a 20% da vida do boss "destruidor", triplique a densidade do tiros.
+Quando tiver reduzido a 20% da vida do boss "aniquilador", Aumente a velocidade e o tempo do tiro seguidor em 80%
+Quando tiver reduzido a 20% da vida do boss "Devastador", inverta periodicamente o movimento semi circular(fazendo um movimento semi circular de baixo para cima)
+Após o nível 400 o drop "escudo" poderá aparecer com chance de 1/10 de ao matar um inimigo apenas quando o player tomar dois danos seguidos, a imunidade de 100% de dano agora será durante 25s se encerrando logo em seguida. Nós ultimos 3s, a "aura" do escudo irá piscar.
+Faça com que o player quando tiver adquirido o "escudo", passe a dar dano "hit kill" nos inimigos quando colidir com esses. O efeito não vale para os bosses.
+
+> implementar melhorias no jogo
+Estenda o sistema de checkpoint, com as mesmas caracteristicas após "morrer" nos levels 20, 90 e 290.
+coloque melhorias no sistema de clicks de todos os botões do jogo, aparecendo um efeito de "botão apertado" e mudando cor toda vez que um botão for acionado
+
+
+> Balanceamento e melhorias
+Reduza a porcentagem do tiro seguidor adquirido pelo player(incomporado ao tiro duplo, triplo, quintuplo para 30%)
+Quando tiver reduzido a 20% da vida do boss "Devastador", além do movimento invertido, faça com que dispare, além do tiro padrão verde, uma chance em 10 de disparar dois tiros seguidores com 4x mais danos em relação ao base, e faça seguir por 5s(objetivo: combater pontos cegos onde o player possa parmanecer parado enquanto atira)
+Quando tiver reduzido a 20% da vida do boss "destruidor", além de triplicao a densidade do tiro, aumento o dano em 2x
+Reduza o tempo de permanencia do "escudo"  para 15s se encerrando logo em seguida. Nós ultimos 3s, continue fazerndo a "aura" do escudo piscar.
+No nivel 7, crie um inimigo gigante(boss), chame-o de "Perseguidor Rei" com 1500 de HP, sendo ele seguidor(mecânica dos inimigos seguidores comuns), com velocidade padrão e faça com que ele tbm de tiros seguidores duplos com intervalos variáveis de 2s á 4s, fazendo seguir por 4s. Faça com que a vida dele apareça permanentemente, inclusive mostrando a vida diminuindo. Quando o boss aparecer, zerar o aparecimento de todos os outros inimigos, até derrotar lo
+
+>Melhora
+No tiro "Endgame redmoon-gun",altera a chance para 1/7 de ao acertar um tiro, causar agora três "explosões circulares" acontecendo em locais aleatórios  na metade superior da tela e mantenha as demais caracteristicas. (dano, raio, etc.). Faça o ajuste no arquivo principal e no arquivo de testes
+
+Melhorias
+Aumente o alcance horizontal de todos os bosses a partir do "destruidor",e em todas as fases dos mesmos, chegando a apenas 5px das bordas laterais, com objetivo de evitar a "camperagem" do player
+No tiro "Endgame redmoon-gun", altere a chance para 1/7 de um tiro neutralizar o tiro do inimigo, e aplique a chance de 1/20 se o tiro for seguidor, quando se colidirem
+Aumente para 20 chances, o sistema de checkpoint, Após o player "morrer", faça aparecer as chances remanescentes no botão de voltar ao checkpoint
+Aumente o valor de creditos para a compra da "Endgame redmoon-gun" para 12000 créditos no "shop"
+
+> Balanceamento, melhorias e reparos
+Retorne ao alcance horizontal anterior somente em relação aos booses "aniquilador" e  "Devastador"
+Verifique o anuncio de vitoria ápos derrotar os gemeos, não está acontecendo e o jogo está continuando.
+Quando tiver reduzido a 20% da vida do boss "destruidor", além de triplicao da densidade do tiro, passe o aumento de dano que estava em 2x para 5x
+No tiro "Endgame redmoon-gun",  e remova a chance de neutralização que estava em 1/20 se o tiro for seguidor, quando se colidire, deixe o tiro seguidor imune
+No background, faça aparecer aleatóriamente, agora com frequencia durante todo o jogo plano de fundo em movimento de galaxias e nebulosas, com cores variadas e aleatórias e aumente em 50%  o tamanho de 20% dessas figuras
+Aumente a porcentagem do tiro seguidor adquirido pelo player(incomporado ao tiro duplo, triplo, quintuplo para 40%)
+limite em 7 vezes, a compra de "Engine boost" no "shop", quando for clicado para comprar o item, mude a informação do item no shop para "boost maximun" e bloquie nova compra
+
+> Ajuste
+No background, faça aparecer aleatóriamente, durante todo o jogo, mas em quantidade 80% menos plano de fundo em movimento de galaxias e nebulosas, com cores variadas e aleatórias.
+
+
+
+

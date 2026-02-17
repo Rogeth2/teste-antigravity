@@ -1,0 +1,3056 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space RPG</title>
+    <style>* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background-color: #050505;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    gap: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px #0ff;
+}
+
+.stat-box {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 15px;
+    border: 1px solid #0ff;
+    border-radius: 5px;
+    color: #0ff;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    backdrop-filter: blur(5px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+h1 {
+    font-size: 4rem;
+    color: #0ff;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #0ff;
+}
+
+p {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    color: #aaa;
+}
+
+button {
+    background: transparent;
+    border: 2px solid #0ff;
+    color: #0ff;
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #0ff;
+    color: #000;
+    box-shadow: 0 0 20px #0ff;
+}
+
+button:active {
+    transform: scale(0.92);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 5px #0ff;
+    transition: transform 0.05s;
+}
+
+/* Shop Styles */
+.shop-items {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.shop-item {
+    background: rgba(20, 20, 40, 0.9);
+    border: 1px solid #444;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 220px;
+    transition: transform 0.2s;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px);
+    border-color: #0ff;
+}
+
+.shop-item h3 {
+    color: #f0f;
+    margin-bottom: 10px;
+}
+
+.shop-item p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.buy-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    width: 100%;
+}</style>
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-layer">
+            <div id="hud">
+                <div class="stat-box">HP: <span id="hp-display">100</span></div>
+                <div class="stat-box">XP: <span id="xp-display">0</span></div>
+                <div class="stat-box">Level: <span id="level-display">1</span></div>
+                <div class="stat-box">Credits: <span id="credits-display">0</span></div>
+                <div class="stat-box">Weapon: Lv <span id="weapon-display">1</span> (Q)</div>
+                <div class="stat-box" style="color: #ff4d4d;">Nuke: <span id="ammo-display">0</span> (E)</div>
+                <div class="stat-box" style="border-color: #f0f; color: #f0f;">Press 'P' for Shop</div>
+                <div class="stat-box" id="score-box" style="margin-left: auto; color: #0ff; font-size: 1.4rem;">Score:
+                    <span id="score-display">0</span>
+                </div>
+            </div>
+            <div id="start-screen" class="screen active">
+                <h1>SPACE RPG REVENGE</h1>
+                <p>WASD to Move | Mouse to Aim & Shoot</p>
+                <button id="start-btn">START MISSION</button>
+            </div>
+            <div id="game-over-screen" class="screen hidden">
+                <div class="screen-content" style="text-align: center;">
+                    <h1>MISSION FAILED</h1>
+                    <p>Score: <span id="final-score">0</span></p>
+                    <p style="font-size: 1.2rem; color: #ff0;">Level Alcançado: <span id="final-level"
+                            style="color: #0ff; font-weight: bold;">1</span></p>
+                    <button id="restart-btn">Try Again</button>
+                    <button id="continue-btn" class="hidden" style="background-color: #f0f; margin-top: 10px;">CHANCES
+                        ADICIONAIS (<span id="continue-count">20</span>)</button>
+                </div>
+            </div>
+            <div id="shop-screen" class="screen hidden">
+                <h1>DOCKING STATION</h1>
+                <div class="shop-items">
+                    <div class="shop-item" data-upgrade="health">
+                        <h3>Hull Repair</h3>
+                        <p>Restore 50 HP</p>
+                        <button class="buy-btn" data-cost="100">100 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="speed">
+                        <h3>Engine Boost</h3>
+                        <p>+5% Speed</p>
+                        <button class="buy-btn" data-cost="200">200 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="damage">
+                        <h3>Weapon Upgrade</h3>
+                        <p>+10% Damage</p>
+                        <button class="buy-btn" data-cost="500">500 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="weapon">
+                        <h3>Multi Shot</h3>
+                        <p>Double/Triple Shot</p>
+                        <button class="buy-btn" data-cost="1000">1000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="homing">
+                        <h3>Homing Missiles</h3>
+                        <p>Auto-aim Projectiles</p>
+                        <button class="buy-btn" data-cost="2000">2000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="obliterator">
+                        <h3>Obliterator</h3>
+                        <p>Screen Nuke (Max 3)</p>
+                        <button class="buy-btn" data-cost="2500">2500 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="laser">
+                        <h3>Laser Cannon</h3>
+                        <p>Lvl 250+ (Continuous Beam)</p>
+                        <button class="buy-btn" data-cost="5000">5000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="quintuple">
+                        <h3>Quintuple Shot</h3>
+                        <p>Lvl 200+ (5-Way + Homing)</p>
+                        <button class="buy-btn" data-cost="3000">3000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="redmoon">
+                        <h3>Endgame redmoon-gun</h3>
+                        <p>Lvl 400+ (720px Mega Blast)</p>
+                        <button class="buy-btn" data-cost="12000">12000 Cr</button>
+                    </div>
+                </div>
+                <button id="close-shop-btn">RESUME</button>
+            </div>
+        </div>
+    </div>
+    <script>
+
+// --- js/utils.js ---
+function checkCollision(rect1, rect2) {
+    return (
+        rect1.x < rect2.x + rect2.width &&
+        rect1.x + rect1.width > rect2.x &&
+        rect1.y < rect2.y + rect2.height &&
+        rect1.height + rect1.y > rect2.y
+    );
+}
+
+// --- js/InputHandler.js ---
+class InputHandler {
+    constructor(game) {
+        this.game = game;
+        this.keys = new Set();
+        this.mouse = { x: 0, y: 0, isDown: false };
+
+        window.addEventListener('keydown', (e) => {
+            this.keys.add(e.key.toLowerCase());
+        });
+
+        window.addEventListener('keyup', (e) => {
+            this.keys.delete(e.key.toLowerCase());
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mousedown', () => {
+            this.mouse.isDown = true;
+        });
+
+        window.addEventListener('mouseup', () => {
+            this.mouse.isDown = false;
+        });
+    }
+
+    isKeyDown(key) {
+        return this.keys.has(key.toLowerCase());
+    }
+}
+
+// --- js/Background.js ---
+class Background {
+    constructor(game) {
+        this.game = game;
+        this.stars = [];
+        this.nebulae = [];
+        this.createStars();
+    }
+
+    createStars() {
+        for (let i = 0; i < 100; i++) {
+            this.stars.push({
+                x: Math.random() * this.game.width,
+                y: Math.random() * this.game.height,
+                size: Math.random() * 2 + 0.5,
+                speed: Math.random() * 3 + 0.5,
+                color: `rgba(255, 255, 255, ${Math.random()})`
+            });
+        }
+    }
+
+    createNebula() {
+        // Random colors for variety
+        const colors = [
+            'rgba(255, 0, 255, 0.15)', // Purple
+            'rgba(0, 255, 255, 0.15)', // Cyan
+            'rgba(255, 100, 0, 0.15)', // Orange
+            'rgba(0, 100, 255, 0.15)', // Deep Blue
+            'rgba(100, 255, 0, 0.15)', // Green
+            'rgba(255, 255, 255, 0.1)'  // White/Galaxy
+        ];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        // 20% chance to be 50% larger
+        const scale = Math.random() < 0.2 ? 1.5 : 1.0;
+
+        this.nebulae.push({
+            x: Math.random() * this.game.width,
+            y: -400, // Start above
+            radius: (200 + Math.random() * 300) * scale,
+            speed: 0.1 + Math.random() * 0.2, // Very slow drift
+            color: color,
+            isGalaxy: Math.random() < 0.3 // Visual flag
+        });
+    }
+
+    update(deltaTime) {
+        // Spawn nebulas/galaxies randomly (rarer: 80% less frequent)
+        if (Math.random() < 0.001) {
+            this.createNebula();
+        }
+        // Update Stars
+        this.stars.forEach(star => {
+            star.y += star.speed;
+            if (star.y > this.game.height) {
+                star.y = 0;
+                star.x = Math.random() * this.game.width;
+            }
+        });
+
+        // Update Nebulae
+        this.nebulae.forEach(nebula => {
+            nebula.y += nebula.speed;
+            // Optionally remove if far off screen, but they are rare enough
+        });
+        this.nebulae = this.nebulae.filter(n => n.y < this.game.height + n.radius);
+    }
+
+    draw(ctx) {
+        // Draw Nebulae first (bottom layer)
+        ctx.save();
+        this.nebulae.forEach(nebula => {
+            const gradient = ctx.createRadialGradient(
+                nebula.x, nebula.y, 0,
+                nebula.x, nebula.y, nebula.radius
+            );
+            gradient.addColorStop(0, nebula.color);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(nebula.x, nebula.y, nebula.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.restore();
+
+        // Draw Stars
+        this.stars.forEach(star => {
+            ctx.fillStyle = star.color;
+            ctx.fillRect(star.x, star.y, star.size, star.size);
+        });
+    }
+}
+
+// --- js/entities/Entity.js ---
+class Entity {
+    constructor(game, x, y) {
+        this.game = game;
+        this.x = x;
+        this.y = y;
+        this.width = 0;
+        this.height = 0;
+        this.speed = 0;
+        this.speedX = 0;
+        this.speedY = 0;
+        this.markedForDeletion = false;
+        this.color = 'white';
+    }
+
+    update(deltaTime) {
+        this.x += this.speedX;
+        this.y += this.speedY;
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+// --- js/entities/Projectile.js ---
+
+
+class Projectile extends Entity {
+    constructor(game, x, y, angle) {
+        super(game, x, y);
+        this.width = 4;
+        this.height = 10;
+        this.speed = 10;
+        this.damage = 10;
+        this.color = '#ff0';
+        this.isEnemy = false;
+        this.isHoming = false;
+        this.isBossBeam = false;
+        this.isArc = false;
+        this.radius = 0;
+        this.initialRadius = 0;
+        this.startX = x;
+        this.startY = y;
+        this.homingTimer = 8000; // ms
+        this.angle = angle;
+
+        this.velocity = {
+            x: Math.cos(angle) * this.speed,
+            y: Math.sin(angle) * this.speed
+        };
+    }
+
+    update(deltaTime) {
+        if (this.isHoming && !this.isEnemy) {
+            // Find nearest enemy
+            let nearest = null;
+            let minBottomDist = Infinity;
+
+            this.game.entities.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+                if (dist < minBottomDist) {
+                    minBottomDist = dist;
+                    nearest = enemy;
+                }
+            });
+
+            if (nearest) {
+                const targetAngle = Math.atan2(
+                    nearest.y - this.y,
+                    nearest.x - this.x
+                );
+                this.angle = targetAngle;
+                this.velocity.x = Math.cos(this.angle) * this.speed;
+                this.velocity.y = Math.sin(this.angle) * this.speed;
+            }
+        } else if (this.isHoming && this.isEnemy && this.game.player) {
+            // Boss homing projectile — targets the player
+            if (this.homingTimer > 0) {
+                this.homingTimer -= deltaTime;
+                const targetAngle = Math.atan2(
+                    this.game.player.y - this.y,
+                    this.game.player.x - this.x
+                );
+                // Gentle steering (lerp angle)
+                let diff = targetAngle - this.angle;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                this.angle += diff * 0.03;
+                this.velocity.x = Math.cos(this.angle) * this.speed;
+                this.velocity.y = Math.sin(this.angle) * this.speed;
+            }
+        }
+
+        // Radius Growth for Arc/Crescent Shot
+        if (this.isArc && this.initialRadius > 0) {
+            const dist = Math.hypot(this.x - this.startX, this.y - this.startY);
+            // Growth: 5px per 30px distance
+            this.radius = this.initialRadius + (dist / 30) * 5;
+
+            // Update AABB for broad-phase collision if needed
+            this.width = this.radius * 2;
+            this.height = this.radius * 2;
+        }
+
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+
+        // Cleanup if off screen
+        if (this.x < 0 || this.x > this.game.width ||
+            this.y < 0 || this.y > this.game.height) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        const rotationAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        ctx.rotate(rotationAngle + Math.PI / 2);
+        ctx.fillStyle = this.color;
+
+        if (this.isArc && this.radius > 0) {
+            // Crescent Moon Shape (Thinner)
+            ctx.beginPath();
+            // Outer Curve
+            ctx.arc(0, 0, this.radius, Math.PI, 0, false);
+            // Inner Curve (closer and offset to create a thinner crescent)
+            ctx.arc(0, this.radius * 0.1, this.radius * 0.98, 0, Math.PI, true);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            // Standard rectangle
+            ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        }
+        ctx.restore();
+    }
+}
+
+// --- js/entities/Drop.js ---
+
+
+class Drop extends Entity {
+    constructor(game, x, y, type = 'OBLITERATOR') {
+        super(game, x, y);
+        this.width = 20;
+        this.height = 20;
+        this.type = type;
+        this.speedY = 1; // Drifts down slowly
+
+        // Blink effect
+        this.blinkTimer = 0;
+        this.visible = true;
+        this.markedForDeletion = false;
+
+        if (this.type === 'OBLITERATOR') {
+            this.color = '#ff4d4d'; // Reddish
+        } else if (this.type === 'ARMOR_1') {
+            this.color = '#4dff4d'; // Green
+        } else if (this.type === 'ARMOR_2') {
+            this.color = '#ffff00'; // Yellow/Gold
+        } else if (this.type === 'SHIELD') {
+            this.color = '#00ffff'; // Cyan/Shield
+        } else if (this.type === 'REPAIR') {
+            this.color = '#ff66aa'; // Pinkish
+        } else {
+            this.color = '#ffffff';
+        }
+    }
+
+    update(deltaTime) {
+        this.y += this.speedY;
+
+        // Blinking
+        this.blinkTimer += deltaTime;
+        if (this.blinkTimer > 200) {
+            this.visible = !this.visible;
+            this.blinkTimer = 0;
+        }
+
+        if (this.y > this.game.height) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(ctx) {
+        if (!this.visible) return;
+
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'black';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        let label = 'N';
+        if (this.type === 'ARMOR_1') label = 'A1';
+        else if (this.type === 'ARMOR_2') label = 'A2';
+        else if (this.type === 'SHIELD') label = 'S';
+        else if (this.type === 'REPAIR') label = '+';
+
+        ctx.fillText(label, 0, 0);
+
+        ctx.restore();
+    }
+}
+
+// --- js/entities/Enemy.js ---
+
+
+
+class Enemy extends Entity {
+    constructor(game, type = 'NORMAL') {
+        super(game, 0, 0);
+        this.width = 40;
+        this.height = 40;
+        this.x = Math.random() * (this.game.width - this.width);
+        this.y = -this.height;
+        this.speedY = Math.random() * 2 + 1;
+        this.color = '#f00';
+        this.type = type;
+
+        this.hp = 20;
+        this.scoreValue = 100;
+        this.creditsValue = 10;
+
+        // Type specific stats
+        if (this.type === 'FOLLOWER') {
+            this.color = '#f0f';
+            this.speed = 2;
+            this.hp = 40;
+            this.scoreValue = 200;
+        } else if (this.type === 'SHOOTER') {
+            this.color = '#0f0';
+            this.hp = 60;
+            this.scoreValue = 300;
+            this.shootTimer = 0;
+            this.shootInterval = 2000;
+        } else if (this.type === 'HYBRID') {
+            this.color = '#fff';
+            this.speed = 2;
+            this.hp = 100;
+            this.scoreValue = 500;
+            this.shootTimer = 0;
+            this.shootInterval = 1500;
+        } else if (this.type === 'SUBBOSS') {
+            this.width = 80;
+            this.height = 80;
+            this.color = '#ffcc00';
+            this.speed = 2;
+            this.hp = 500;
+            this.scoreValue = 2000;
+            this.creditsValue = 200;
+            this.shootTimer = 0;
+            this.shootInterval = 1200;
+        }
+
+        this.canRandomShot = (this.game.level >= 5 && Math.random() < 0.02);
+        this.hasRandomShotFired = false;
+        this.oscillationMult = (this.game.level >= 60 && this.type === 'NORMAL' && Math.random() < 0.05) ? 4 : 1;
+    }
+
+    update(deltaTime) {
+        let moveSpeed = this.speed;
+        let fireRateMult = 1;
+        let projectileSpeedMult = 1;
+
+        if (this.game.globalFollowerSpeedMult > 1 && (this.type === 'FOLLOWER' || this.type === 'HYBRID' || this.type === 'SUBBOSS')) {
+            if (this.type !== 'SUBBOSS') {
+                moveSpeed *= this.game.globalFollowerSpeedMult;
+            }
+        }
+        if (this.game.globalEnemyFireRateMult > 1) {
+            fireRateMult = this.game.globalEnemyFireRateMult;
+        }
+        if (this.game.globalEnemyProjectileSpeedMult > 1) {
+            projectileSpeedMult = this.game.globalEnemyProjectileSpeedMult;
+        }
+
+        if (this.type === 'NORMAL') {
+            this.y += this.speedY;
+            this.x += Math.sin(this.y * 0.05) * 2 * this.oscillationMult;
+            this.rotation = Math.PI / 2;
+        } else if (this.type === 'FOLLOWER') {
+            if (this.game.player) {
+                const dx = this.game.player.x - this.x;
+                const dy = this.game.player.y - this.y;
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * moveSpeed;
+                this.y += Math.sin(angle) * moveSpeed;
+                this.rotation = angle;
+            }
+        } else if (this.type === 'SHOOTER') {
+            this.y += this.speedY * 0.5;
+            this.rotation = Math.PI / 2;
+            this.handleShooting(deltaTime, fireRateMult, projectileSpeedMult);
+        } else if (this.type === 'HYBRID' || this.type === 'SUBBOSS') {
+            if (this.game.player) {
+                const dx = this.game.player.x - this.x;
+                const dy = this.game.player.y - this.y;
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * moveSpeed;
+                this.y += Math.sin(angle) * moveSpeed;
+                this.rotation = angle;
+            }
+            this.handleShooting(deltaTime, fireRateMult, projectileSpeedMult);
+        }
+
+        if (this.canRandomShot && !this.hasRandomShotFired && this.y > 50) {
+            this.hasRandomShotFired = true;
+            const randomAngle = Math.random() * Math.PI * 2;
+            const projectile = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, randomAngle);
+            projectile.isEnemy = true;
+            projectile.color = '#ff9900';
+            projectile.damage = 10;
+            this.game.projectiles.push(projectile);
+        }
+
+        if (this.y > this.game.height || (this.type !== 'NORMAL' && this.y > this.game.height + 100)) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        const drawRotation = (this.rotation !== undefined) ? this.rotation : Math.PI / 2;
+        ctx.rotate(drawRotation + Math.PI / 2);
+
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, -this.height / 2);
+        ctx.lineTo(this.width / 2, this.height / 2);
+        ctx.lineTo(-this.width / 2, this.height / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    handleShooting(deltaTime, fireRateMult, projectileSpeedMult) {
+        if (this.shootTimer > (this.shootInterval / fireRateMult)) {
+            if (this.game.player) {
+                const angle = Math.atan2(
+                    this.game.player.y - (this.y + this.height / 2),
+                    this.game.player.x - (this.x + this.width / 2)
+                );
+
+                const shotCount = this.game.level >= 400 ? 2 : 1;
+                const offset = 8;
+
+                for (let i = 0; i < shotCount; i++) {
+                    let spawnX = this.x + this.width / 2;
+                    let spawnY = this.y + this.height / 2;
+
+                    if (shotCount === 2) {
+                        const sideOffset = (i === 0 ? 1 : -1) * offset;
+                        spawnX += Math.cos(angle + Math.PI / 2) * sideOffset;
+                        spawnY += Math.sin(angle + Math.PI / 2) * sideOffset;
+                    }
+
+                    const projectile = new Projectile(this.game, spawnX, spawnY, angle);
+                    projectile.isEnemy = true;
+                    projectile.color = '#0f0';
+                    projectile.damage = 10;
+                    projectile.speed *= projectileSpeedMult;
+                    projectile.velocity.x = Math.cos(angle) * projectile.speed;
+                    projectile.velocity.y = Math.sin(angle) * projectile.speed;
+                    this.game.projectiles.push(projectile);
+                }
+            }
+            this.shootTimer = 0;
+        } else {
+            this.shootTimer += deltaTime;
+        }
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
+        if (this.hp <= 0) {
+            this.markedForDeletion = true;
+            this.game.score += this.scoreValue;
+            this.game.credits += this.creditsValue;
+            if (this.game.onEnemyDeath) {
+                this.game.onEnemyDeath(this);
+            }
+        }
+    }
+}
+
+// --- js/entities/Boss.js ---
+
+
+
+class Boss extends Entity {
+    constructor(game, bossLevel = 50) {
+        super(game, 0, 0);
+        this.isBoss = true;
+        this.bossLevel = bossLevel;
+        this.type = 'BOSS';
+        this.markedForDeletion = false;
+
+        if (bossLevel === 50) {
+            // Boss 1 — DESTRUIDOR
+            this.width = 120;
+            this.height = 120;
+            this.maxHp = 6000;
+            this.hp = this.maxHp;
+            this.scoreValue = 5000;
+            this.creditsValue = 500;
+            this.color = '#ff4400';
+            this.speed = 1.5;
+            this.attackPatterns = ['SPIRAL', 'BURST', 'RING'];
+            this.projectileCount = 8;
+            this.projectileSpeed = 4;
+            this.bossName = '⚠ DESTRUIDOR ⚠';
+            this.nameColor = '#ff6600';
+        } else if (bossLevel === 100) {
+            // Boss 2 — ANIQUILADOR
+            this.width = 150;
+            this.height = 150;
+            this.maxHp = 50000;
+            this.hp = this.maxHp;
+            this.scoreValue = 10000;
+            this.creditsValue = 1000;
+            this.color = '#aa00ff';
+            this.speed = 1.8;
+            this.attackPatterns = ['CROSS', 'HOMING_BURST', 'SHOTGUN'];
+            this.projectileCount = 10;
+            this.projectileSpeed = 5;
+            this.bossName = '💀 ANIQUILADOR 💀';
+            this.nameColor = '#cc44ff';
+        } else if (bossLevel === 300) {
+            // Boss 3 — DEVASTADOR
+            this.width = 170;
+            this.height = 170;
+            this.maxHp = 400000;
+            this.hp = this.maxHp;
+            this.scoreValue = 20000;
+            this.creditsValue = 2000;
+            this.color = '#00cc44';
+            this.speed = 2.0;
+            this.attackPatterns = ['HELIX', 'WAVE', 'NOVA'];
+            this.projectileCount = Math.floor(10 * 1.2);
+            this.projectileSpeed = Math.floor(5 * 1.2);
+            this.bossName = '🔥 DEVASTADOR 🔥';
+            this.nameColor = '#00ff66';
+        } else if (bossLevel === 490) {
+            // Boss 4 — GÊMEO
+            this.width = 110;
+            this.height = 110;
+            this.maxHp = 1600000;
+            this.hp = this.maxHp;
+            this.scoreValue = 15000;
+            this.creditsValue = 1500;
+            this.color = '#ff0066';
+            this.speed = 2.1;
+            this.attackPatterns = ['DIAMOND', 'MIRROR_BURST', 'PULSE'];
+            this.projectileCount = Math.floor(12 * 1.05);
+            this.projectileSpeed = Math.floor(6 * 1.05);
+            this.bossName = '👁 GÊMEO 👁';
+            this.nameColor = '#ff3388';
+        } else if (bossLevel === 7) {
+            // New Early Boss — PERSEGUIDOR REI
+            this.width = 100;
+            this.height = 100;
+            this.maxHp = 1500;
+            this.hp = this.maxHp;
+            this.scoreValue = 2000;
+            this.creditsValue = 200;
+            this.color = '#ffff00';
+            this.speed = 2.0; // Follower speed
+            this.attackPatterns = ['DOUBLE_HOMING'];
+            this.projectileCount = 2;
+            this.projectileSpeed = 5;
+            this.bossName = '👑 PERSEGUIDOR REI 👑';
+            this.nameColor = '#ffff00';
+        }
+
+        // Positioning
+        this.x = (this.game.width - this.width) / 2;
+        this.y = -this.height;
+        this.targetY = 80;
+        this.entering = true;
+
+        // Attack
+        this.attackTimer = 0;
+        this.attackInterval = 2500;
+        this.currentPatternIndex = 0;
+        this.patternCycleTimer = 0;
+        this.patternCycleDuration = 5000;
+
+        // Movement
+        this.moveTimer = 0;
+        this.crossAngle = 0;
+
+        // Twin offset (for Boss 4)
+        this.twinOffset = 0;
+    }
+
+    update(deltaTime) {
+        // Entry animation
+        if (this.entering) {
+            this.y += 1.5;
+            if (this.y >= this.targetY) {
+                this.y = this.targetY;
+                this.entering = false;
+            }
+            return;
+        }
+
+        // Movement Logic
+        this.moveTimer += deltaTime;
+        const centerX = (this.game.width - this.width) / 2 + this.twinOffset;
+
+        if (this.bossLevel === 7) {
+            // Level 7: Follower movement (already reaches edges by following player, but clamping will handle it)
+            if (this.game.player) {
+                const dx = this.game.player.x + this.game.player.width / 2 - (this.x + this.width / 2);
+                const dy = this.game.player.y + this.game.player.height / 2 - (this.y + this.height / 2);
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * this.speed;
+                this.y += Math.sin(angle) * this.speed;
+            }
+        } else if (this.bossLevel === 300) {
+            // Boss 3 (Devastador): Hybrid Horizontal + Semi-Circular (reaching center)
+            const hpRatio = this.hp / this.maxHp;
+            // REVERTED: Original horizontal range for Devastador
+            const horizontalDist = this.game.width * 0.35;
+            // Phase: 30% HP -> 3/4 screen radius
+            const verticalDistBase = this.game.height * 0.3;
+            const verticalDistPhase = this.game.height * 0.75;
+            const verticalDist = hpRatio <= 0.3 ? verticalDistPhase : verticalDistBase;
+
+            this.x = centerX + Math.cos(this.moveTimer * 0.001 * this.speed) * horizontalDist;
+
+            // 20% HP Phase: Alternating superior/inferior semi-circle
+            if (hpRatio <= 0.2) {
+                const cycle = Math.floor(this.moveTimer / 4000) % 2; // Every 4 seconds
+                const wave = Math.sin(this.moveTimer * 0.001 * this.speed);
+                if (cycle === 0) {
+                    // Superior (Default)
+                    this.y = this.targetY + Math.abs(wave) * verticalDist;
+                } else {
+                    // Inferior Inverted (Bottom up)
+                    // Offset targetY by height + verticalDist to start from bottom
+                    const bottomY = this.game.height - this.height - 50;
+                    this.y = bottomY - Math.abs(wave) * verticalDist;
+                }
+            } else {
+                this.y = this.targetY + Math.abs(Math.sin(this.moveTimer * 0.001 * this.speed)) * verticalDist;
+            }
+        } else if (this.bossLevel === 490) {
+            // Boss 4 (Gêmeos): Independent Movements
+            const isAlpha = this.bossName.includes('ALFA');
+            const hpRatio = this.hp / this.maxHp;
+            const direction = isAlpha ? 1 : -1;
+            // Anti-Camping Range: 5px from edges
+            const horizontalDist = (this.game.width - this.width) / 2 - 5;
+            const speedFactor = isAlpha ? 1.0 : 1.2;
+
+            if (isAlpha && hpRatio <= 0.4) {
+                // Alpha Phase: 40% HP -> Vertical movement (80% screen) at 20% less speed
+                const verticalRange = this.game.height * 0.8;
+                const verticalSpeed = 0.0005 * this.speed * 0.8;
+                this.x = centerX + Math.sin(this.moveTimer * 0.0008 * this.speed * direction) * horizontalDist;
+                this.y = this.targetY + (Math.sin(this.moveTimer * verticalSpeed) + 1) / 2 * verticalRange;
+            } else {
+                this.x = centerX + Math.sin(this.moveTimer * 0.0008 * this.speed * speedFactor * direction) * horizontalDist;
+                this.y = this.targetY + Math.cos(this.moveTimer * 0.0015 * speedFactor) * 40;
+            }
+        } else {
+            // Default oscillation (Boss 50 & 100)
+            const isAniquilador = this.bossLevel === 100;
+            // REVERTED: Original range for Aniquilador, Keep extended for Destruidor (50)
+            const moveRange = isAniquilador ? (this.game.width * 0.3) : ((this.game.width - this.width) / 2 - 5);
+            this.x = centerX + Math.sin(this.moveTimer * 0.001 * this.speed) * moveRange;
+        }
+
+        // Clamp to screen (5px limit)
+        if (this.x < 5) this.x = 5;
+        if (this.x > this.game.width - this.width - 5) this.x = this.game.width - this.width - 5;
+
+        // Pattern cycling
+        this.patternCycleTimer += deltaTime;
+        if (this.patternCycleTimer >= this.patternCycleDuration) {
+            this.patternCycleTimer = 0;
+            this.currentPatternIndex = (this.currentPatternIndex + 1) % this.attackPatterns.length;
+        }
+
+        // Shooting
+        this.attackTimer += deltaTime;
+        if (this.attackTimer >= this.attackInterval) {
+            this.attackTimer = 0;
+            this.executePattern(this.attackPatterns[this.currentPatternIndex]);
+
+            // Devastador 20% HP Anti-Camping Shots
+            if (this.bossLevel === 300 && (this.hp / this.maxHp) <= 0.2 && Math.random() < 0.1) {
+                this.fireDualHoming(this.x + this.width / 2, this.y + this.height / 2);
+            }
+        }
+
+        // Cross/rotation angle
+        this.crossAngle += deltaTime * 0.002;
+    }
+
+    executePattern(pattern) {
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 2;
+
+        switch (pattern) {
+            // Boss 1 patterns
+            case 'SPIRAL': this.fireSpiral(cx, cy); break;
+            case 'BURST': this.fireBurst(cx, cy); break;
+            case 'RING': this.fireRing(cx, cy); break;
+            // Boss 2 patterns
+            case 'CROSS': this.fireCross(cx, cy); break;
+            case 'HOMING_BURST': this.fireHomingBurst(cx, cy); break;
+            case 'SHOTGUN': this.fireShotgun(cx, cy); break;
+            // Boss 3 patterns
+            case 'HELIX': this.fireHelix(cx, cy); break;
+            case 'WAVE': this.fireWave(cx, cy); break;
+            case 'NOVA': this.fireNova(cx, cy); break;
+            // Boss 4 patterns
+            case 'DIAMOND': this.fireDiamond(cx, cy); break;
+            case 'MIRROR_BURST': this.fireMirrorBurst(cx, cy); break;
+            case 'PULSE': this.firePulse(cx, cy); break;
+            // Level 7 pattern
+            case 'DOUBLE_HOMING': this.fireDoubleHoming(cx, cy); break;
+        }
+    }
+
+    // === Boss 1 Patterns ===
+
+    fireSpiral(cx, cy) {
+        let count = this.projectileCount;
+        const hpRatio = this.hp / this.maxHp;
+        if (this.bossLevel === 50) {
+            if (hpRatio <= 0.2) {
+                count *= 3; // Triple density (damage handled in spawnProjectile)
+            } else if (hpRatio <= 0.3) count *= 2; // Double density
+        }
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i + this.crossAngle;
+            this.spawnProjectile(cx, cy, angle, this.projectileSpeed, '#ff6622');
+        }
+    }
+
+    fireBurst(cx, cy) {
+        if (!this.game.player) return;
+        const baseAngle = Math.atan2(this.game.player.y - cy, this.game.player.x - cx);
+        const hpRatio = this.hp / this.maxHp;
+        let count = 12;
+        if (this.bossLevel === 50) {
+            if (hpRatio <= 0.2) {
+                count = 36; // Triple density (damage handled in spawnProjectile)
+            } else if (hpRatio <= 0.3) count = 24; // Double density
+        }
+        const spread = 0.8;
+        for (let i = 0; i < count; i++) {
+            const angle = baseAngle - spread / 2 + (spread / (count - 1)) * i;
+            this.spawnProjectile(cx, cy, angle, this.projectileSpeed * 1.2, '#ffaa00');
+        }
+    }
+
+    fireRing(cx, cy) {
+        let count = 16;
+        const hpr = this.hp / this.maxHp;
+        if (this.bossLevel === 50) {
+            if (hpr <= 0.2) {
+                count = 48; // Triple density (damage handled in spawnProjectile)
+            } else if (hpr <= 0.3) count = 32; // Double density
+        }
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            this.spawnProjectile(cx, cy, angle, this.projectileSpeed * 0.8, '#ff2200');
+        }
+    }
+
+    // === Boss 2 Patterns ===
+
+    fireCross(cx, cy) {
+        const arms = 4;
+        const perArm = Math.floor(this.projectileCount / arms);
+        for (let a = 0; a < arms; a++) {
+            const baseAngle = this.crossAngle + (Math.PI * 2 / arms) * a;
+            for (let i = 0; i < perArm; i++) {
+                const speed = this.projectileSpeed * (0.6 + i * 0.3);
+                this.spawnProjectile(cx, cy, baseAngle, speed, '#cc00ff');
+            }
+        }
+    }
+
+    fireHomingBurst(cx, cy) {
+        const count = 6;
+        const hpRatio = this.hp / this.maxHp;
+        const isPhase2 = (this.bossLevel === 100 && hpRatio <= 0.3);
+        const isPhase3 = (this.bossLevel === 100 && hpRatio <= 0.2);
+
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            let speed = this.projectileSpeed * 0.7;
+            let timeMult = 1;
+
+            if (isPhase3) {
+                speed *= 1.8; // +80%
+                timeMult = 1.8;
+            } else if (isPhase2) {
+                speed *= 1.7; // +70%
+                timeMult = 1.7;
+            }
+
+            const p = this.spawnProjectile(cx, cy, angle, speed, '#00ffff');
+            if (p) {
+                p.isHoming = true;
+                if (isPhase2 || isPhase3) {
+                    p.homingTimer *= timeMult;
+                }
+            }
+        }
+    }
+
+    fireShotgun(cx, cy) {
+        if (!this.game.player) return;
+        const baseAngle = Math.atan2(this.game.player.y - cy, this.game.player.x - cx);
+        const count = 20;
+        const spread = 1.2;
+        for (let i = 0; i < count; i++) {
+            const angle = baseAngle - spread / 2 + (spread / (count - 1)) * i;
+            const speed = this.projectileSpeed * (0.8 + Math.random() * 0.5);
+            this.spawnProjectile(cx, cy, angle, speed, '#ff00aa');
+        }
+    }
+
+    // === Boss 3 Patterns ===
+
+    fireHelix(cx, cy) {
+        // Two interleaved spirals going in opposite directions
+        const count = this.projectileCount;
+        for (let i = 0; i < count; i++) {
+            const angle1 = this.crossAngle + (Math.PI * 2 / count) * i;
+            const angle2 = -this.crossAngle + (Math.PI * 2 / count) * i + Math.PI;
+            this.spawnProjectile(cx, cy, angle1, this.projectileSpeed, '#00ff44');
+            this.spawnProjectile(cx, cy, angle2, this.projectileSpeed * 0.9, '#44ff00');
+        }
+    }
+
+    fireWave(cx, cy) {
+        // Sine wave of projectiles downward
+        if (!this.game.player) return;
+        const count = 14;
+        for (let i = 0; i < count; i++) {
+            const xOff = (i - count / 2) * 30;
+            const angle = Math.PI / 2 + Math.sin(i * 0.8 + this.crossAngle) * 0.4;
+            this.spawnProjectile(cx + xOff, cy, angle, this.projectileSpeed * 1.1, '#00ffaa');
+        }
+    }
+
+    fireNova(cx, cy) {
+        // Expanding ring followed by a contracting ring
+        const count = 24;
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const speed = this.projectileSpeed * (i % 2 === 0 ? 1.0 : 0.5);
+            this.spawnProjectile(cx, cy, angle, speed, '#88ff00');
+        }
+    }
+
+    // === Boss 4 Patterns ===
+
+    fireDiamond(cx, cy) {
+        // Diamond shape burst
+        const count = this.projectileCount;
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i + Math.PI / 4;
+            const speed = this.projectileSpeed * (1 + 0.3 * Math.abs(Math.sin(angle * 2)));
+            this.spawnProjectile(cx, cy, angle, speed, '#ff0066');
+        }
+    }
+
+    // === Level 7 & Buff Patterns ===
+
+    fireDoubleHoming(cx, cy) {
+        if (!this.game.player) return;
+        const count = 2;
+        const spread = 0.5;
+        const angleToPlayer = Math.atan2(this.game.player.y - cy, this.game.player.x - cx);
+        for (let i = 0; i < count; i++) {
+            const angle = angleToPlayer - spread / 2 + spread * i;
+            const p = this.spawnProjectile(cx, cy, angle, this.projectileSpeed, '#ffff00');
+            if (p) {
+                p.isHoming = true;
+                p.homingTimer = 4000;
+            }
+        }
+        // Varied interval 2s to 4s
+        this.attackInterval = 2000 + Math.random() * 2000;
+    }
+
+    fireDualHoming(cx, cy) {
+        if (!this.game.player) return;
+        const count = 2;
+        const spread = 0.3;
+        const angleToPlayer = Math.atan2(this.game.player.y - cy, this.game.player.x - cx);
+        for (let i = 0; i < count; i++) {
+            const angle = angleToPlayer - spread / 2 + spread * i;
+            // High speed and 4x damage
+            const p = this.spawnProjectile(cx, cy, angle, this.projectileSpeed * 1.5, '#00ff44');
+            if (p) {
+                p.damage *= 4;
+                p.isHoming = true;
+                p.homingTimer = 5000;
+            }
+        }
+    }
+
+    fireMirrorBurst(cx, cy) {
+        // Fire mirrored projectiles (both sides simultaneously)
+        if (!this.game.player) return;
+        const baseAngle = Math.atan2(this.game.player.y - cy, this.game.player.x - cx);
+        const count = 10;
+        const spread = 1.0;
+        for (let i = 0; i < count; i++) {
+            const angle = baseAngle - spread / 2 + (spread / (count - 1)) * i;
+            this.spawnProjectile(cx, cy, angle, this.projectileSpeed * 1.3, '#ff3388');
+            // Mirror
+            this.spawnProjectile(cx, cy, Math.PI - angle, this.projectileSpeed * 1.1, '#ff6699');
+        }
+    }
+
+    firePulse(cx, cy) {
+        // Concentric rings at different speeds
+        const rings = 3;
+        const perRing = Math.floor(this.projectileCount / rings);
+        for (let r = 0; r < rings; r++) {
+            for (let i = 0; i < perRing; i++) {
+                const angle = (Math.PI * 2 / perRing) * i + r * 0.3;
+                const speed = this.projectileSpeed * (0.5 + r * 0.4);
+                this.spawnProjectile(cx, cy, angle, speed, '#ff1155');
+            }
+        }
+    }
+
+    spawnProjectile(x, y, angle, speed, color) {
+        const projectile = new Projectile(this.game, x, y, angle);
+        projectile.isEnemy = true;
+        projectile.isBossBeam = true;
+        projectile.color = color;
+        projectile.damage = 15;
+        // Boss 50 Damage Buff at 20% HP
+        const hpRatio = this.hp / this.maxHp;
+        if (this.bossLevel === 50 && hpRatio <= 0.2) {
+            projectile.damage *= 5; // MASSIVE BUFF (5x)
+        }
+        projectile.speed = speed;
+        projectile.width = 6;
+        projectile.height = 6;
+        projectile.velocity.x = Math.cos(angle) * speed;
+        projectile.velocity.y = Math.sin(angle) * speed;
+
+        // Beta Phase: 40% HP -> 20% chance of slow homing shots
+        const isBeta = this.bossName.includes('BETA');
+        if (isBeta && hpRatio <= 0.4 && Math.random() < 0.20) {
+            projectile.isHoming = true;
+            projectile.speed *= 0.5; // 50% slower
+            projectile.velocity.x *= 0.5;
+            projectile.velocity.y *= 0.5;
+            projectile.color = '#00ffff';
+        }
+
+        this.game.projectiles.push(projectile);
+        return projectile;
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
+        if (this.hp <= 0) {
+            this.hp = 0;
+            this.markedForDeletion = true;
+            this.game.score += this.scoreValue;
+            this.game.credits += this.creditsValue;
+
+            if (this.game.onBossDeath) {
+                this.game.onBossDeath(this);
+            }
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 2;
+
+        if (this.bossLevel === 7) {
+            this.drawBoss7(ctx, cx, cy);
+        } else if (this.bossLevel === 50) {
+            this.drawBoss1(ctx, cx, cy);
+        } else if (this.bossLevel === 100) {
+            this.drawBoss2(ctx, cx, cy);
+        } else if (this.bossLevel === 300) {
+            this.drawBoss3(ctx, cx, cy);
+        } else if (this.bossLevel === 490) {
+            this.drawBoss4(ctx, cx, cy);
+        }
+
+        // HP Bar (always visible)
+        this.drawHpBar(ctx);
+
+        ctx.restore();
+    }
+
+    drawBoss7(ctx, cx, cy) {
+        // Large Golden Diamond/Star
+        const s = this.width / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.shadowColor = '#ffff00';
+        ctx.shadowBlur = 30;
+
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        ctx.moveTo(0, -s);
+        ctx.lineTo(s * 0.8, 0);
+        ctx.lineTo(0, s);
+        ctx.lineTo(-s * 0.8, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Inner crown-like center
+        ctx.fillStyle = '#ffaa00';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawBoss1(ctx, cx, cy) {
+        // Octagon - red/orange
+        const s = this.width / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.shadowColor = '#ff4400';
+        ctx.shadowBlur = 20;
+
+        ctx.fillStyle = '#ff4400';
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i - Math.PI / 8;
+            const x = Math.cos(angle) * s * 0.9;
+            const y = Math.sin(angle) * s * 0.9;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#ff8800';
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i;
+            const x = Math.cos(angle) * s * 0.5;
+            const y = Math.sin(angle) * s * 0.5;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#f00';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffaa00';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i - Math.PI / 8;
+            const x = Math.cos(angle) * s * 0.9;
+            const y = Math.sin(angle) * s * 0.9;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawBoss2(ctx, cx, cy) {
+        // Star shape - purple/cyan
+        const s = this.width / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.shadowColor = '#aa00ff';
+        ctx.shadowBlur = 30;
+
+        ctx.fillStyle = '#7700cc';
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+            const angle = (Math.PI * 2 / 10) * i - Math.PI / 2;
+            const r = i % 2 === 0 ? s * 0.95 : s * 0.5;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#cc44ff';
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 2 / 6) * i;
+            const x = Math.cos(angle) * s * 0.35;
+            const y = Math.sin(angle) * s * 0.35;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0ff';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#dd66ff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+            const angle = (Math.PI * 2 / 10) * i - Math.PI / 2;
+            const r = i % 2 === 0 ? s * 0.95 : s * 0.5;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawBoss3(ctx, cx, cy) {
+        // Hexagonal fortress - green/toxic
+        const s = this.width / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.shadowColor = '#00ff44';
+        ctx.shadowBlur = 35;
+
+        // Rotating outer hexagon
+        ctx.fillStyle = '#006622';
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 2 / 6) * i + this.crossAngle * 0.5;
+            const x = Math.cos(angle) * s * 0.95;
+            const y = Math.sin(angle) * s * 0.95;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Inner rotating triangle
+        ctx.fillStyle = '#00cc44';
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+            const angle = (Math.PI * 2 / 3) * i - this.crossAngle;
+            const x = Math.cos(angle) * s * 0.55;
+            const y = Math.sin(angle) * s * 0.55;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Toxic core
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#00ff00';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Outer border
+        ctx.strokeStyle = '#44ff88';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 2 / 6) * i + this.crossAngle * 0.5;
+            const x = Math.cos(angle) * s * 0.95;
+            const y = Math.sin(angle) * s * 0.95;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawBoss4(ctx, cx, cy) {
+        // Crystal/diamond shape - pink/red
+        const s = this.width / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.shadowColor = '#ff0066';
+        ctx.shadowBlur = 25;
+
+        // Diamond body
+        ctx.fillStyle = '#cc0044';
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 0.9);
+        ctx.lineTo(s * 0.7, 0);
+        ctx.lineTo(0, s * 0.9);
+        ctx.lineTo(-s * 0.7, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Inner cross
+        ctx.fillStyle = '#ff3366';
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 0.4);
+        ctx.lineTo(s * 0.3, 0);
+        ctx.lineTo(0, s * 0.4);
+        ctx.lineTo(-s * 0.3, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Eye
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ff0088';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Border
+        ctx.strokeStyle = '#ff6699';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 0.9);
+        ctx.lineTo(s * 0.7, 0);
+        ctx.lineTo(0, s * 0.9);
+        ctx.lineTo(-s * 0.7, 0);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawHpBar(ctx) {
+        const barWidth = this.width + 60;
+        const barHeight = 14;
+        const barX = this.x + this.width / 2 - barWidth / 2;
+        const barY = this.y - 25;
+        const hpRatio = Math.max(0, this.hp / this.maxHp);
+
+        // Background
+        ctx.fillStyle = '#333';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        // HP fill (green to red gradient)
+        const r = Math.floor(255 * (1 - hpRatio));
+        const g = Math.floor(255 * hpRatio);
+        ctx.fillStyle = `rgb(${r}, ${g}, 0)`;
+        ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
+
+        // Border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+        // HP Text — doubled font size
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${this.hp} / ${this.maxHp}`, this.x + this.width / 2, barY - 6);
+
+        // Boss Name — doubled font size
+        ctx.font = 'bold 28px Arial';
+        ctx.fillStyle = this.nameColor || '#fff';
+        ctx.shadowColor = this.nameColor || '#fff';
+        ctx.shadowBlur = 15;
+        ctx.fillText(this.bossName || 'BOSS', this.x + this.width / 2, barY - 30);
+    }
+}
+
+// --- js/entities/Player.js ---
+
+
+
+class Player extends Entity {
+    constructor(game) {
+        super(game, game.width / 2, game.height / 2);
+        this.width = 40;
+        this.height = 40;
+        this.speed = 5;
+        this.color = '#0ff'; // Cyan
+
+        // Stats
+        this.maxHp = 100;
+        this.hp = this.maxHp;
+        this.damage = 10;
+        this.weaponLevel = 1;
+        this.currentWeaponLevel = 1;
+        this.hasHoming = false;
+        this.obliteratorAmmo = 0;
+        this.maxHpLevel = 0; // 0, 1, 2
+
+        // Shooting
+        this.shootTimer = 0;
+        this.shootInterval = 200; // ms
+
+        // Laser Charge
+        this.isCharging = false;
+        this.chargeTimer = 0;
+        this.maxCharge = 600; // ms to full charge
+
+        // Shield Mechanic
+        this.shieldTimer = 0; // ms
+
+        // Damage Tracking (for Shield Drop Condition Lvl 400+)
+        this.lastDamageTime = 0;
+        this.damageSequenceCount = 0;
+    }
+
+    takeDamage(amount) {
+        let finalDamage = amount;
+
+        if (this.shieldTimer > 0) {
+            // New: 100% immunity for the entire 25s duration
+            finalDamage = 0;
+        }
+
+        this.hp -= finalDamage;
+        if (finalDamage > 0) {
+            this.game.spawnFloatingText(this.x + this.width / 2, this.y, `-${Math.floor(finalDamage)}`, '#ff4444');
+
+            // Track Sequence
+            const now = performance.now();
+            if (now - this.lastDamageTime < 2000) { // Within 2 seconds
+                this.damageSequenceCount++;
+            } else {
+                this.damageSequenceCount = 1;
+            }
+            this.lastDamageTime = now;
+        }
+
+        if (this.hp <= 0) {
+            this.hp = 0;
+            this.game.triggerGameOver();
+        }
+    }
+
+    update(deltaTime) {
+        // Shield Timer
+        if (this.shieldTimer > 0) {
+            this.shieldTimer -= deltaTime;
+            if (this.shieldTimer < 0) this.shieldTimer = 0;
+        }
+
+        // Reset speed
+        this.speedX = 0;
+        this.speedY = 0;
+
+        // Movement
+        if (this.game.input.isKeyDown('w') || this.game.input.isKeyDown('arrowup')) {
+            this.speedY = -this.speed;
+        }
+        if (this.game.input.isKeyDown('s') || this.game.input.isKeyDown('arrowdown')) {
+            this.speedY = this.speed;
+        }
+        if (this.game.input.isKeyDown('a') || this.game.input.isKeyDown('arrowleft')) {
+            this.speedX = -this.speed;
+        }
+        if (this.game.input.isKeyDown('d') || this.game.input.isKeyDown('arrowright')) {
+            this.speedX = this.speed;
+        }
+
+        // Apply movement
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Boundaries
+        if (this.x < 0) this.x = 0;
+        if (this.x > this.game.width - this.width) this.x = this.game.width - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y > this.game.height - this.height) this.y = this.game.height - this.height;
+
+        // Calculate Aim Angle
+        const angle = Math.atan2(
+            this.game.input.mouse.y - (this.y + this.height / 2),
+            this.game.input.mouse.x - (this.x + this.width / 2)
+        );
+
+        // Shoot Logic
+        const activeLevel = this.currentWeaponLevel || 1;
+
+        if (activeLevel === 4) { // Laser
+            if (this.game.input.mouse.isDown) {
+                if (this.shootTimer > 50) { // Fast fire cycle (20/sec)
+                    // Fire Laser
+                    const projectile = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle);
+                    projectile.speed = 80; // Fast
+                    projectile.damage = this.damage * 2; // Reduced per-tick damage for continuous fire, but high DPS
+                    projectile.width = 10;
+                    projectile.height = 1000;
+                    projectile.color = '#0ff'; // Cyan beam
+                    projectile.velocity.x = Math.cos(angle) * projectile.speed;
+                    projectile.velocity.y = Math.sin(angle) * projectile.speed;
+
+                    this.game.projectiles.push(projectile);
+                    this.shootTimer = 0;
+                } else {
+                    this.shootTimer += deltaTime;
+                }
+            } else {
+                this.shootTimer = 1000; // Ready to shoot immediately on click
+            }
+        } else {
+            // Normal Weapon Levels
+            if (this.game.input.mouse.isDown) {
+                if (this.shootTimer > this.shootInterval) {
+                    // Weapon Levels logic
+                    // Buff: 40% chance to be homing
+                    const applyHoming = this.hasHoming && Math.random() < 0.4;
+                    const projectileSpeed = applyHoming ? 7 : 10;
+
+                    if (activeLevel === 1) {
+                        const projectile = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle);
+                        projectile.speed = projectileSpeed;
+                        projectile.velocity.x = Math.cos(angle) * projectile.speed;
+                        projectile.velocity.y = Math.sin(angle) * projectile.speed;
+                        projectile.damage = this.damage;
+                        projectile.isHoming = applyHoming;
+                        this.game.projectiles.push(projectile);
+                    } else if (activeLevel === 2) {
+                        // Double Shot
+                        const offset = 10;
+                        const p1 = new Projectile(this.game, this.x + this.width / 2 + Math.cos(angle + Math.PI / 2) * offset, this.y + this.height / 2 + Math.sin(angle + Math.PI / 2) * offset, angle);
+                        const p2 = new Projectile(this.game, this.x + this.width / 2 + Math.cos(angle - Math.PI / 2) * offset, this.y + this.height / 2 + Math.sin(angle - Math.PI / 2) * offset, angle);
+
+                        p1.speed = projectileSpeed; p2.speed = projectileSpeed;
+                        p1.velocity.x = Math.cos(angle) * p1.speed; p1.velocity.y = Math.sin(angle) * p1.speed;
+                        p2.velocity.x = Math.cos(angle) * p2.speed; p2.velocity.y = Math.sin(angle) * p2.speed;
+
+                        p1.damage = this.damage; p2.damage = this.damage;
+                        p1.isHoming = applyHoming; p2.isHoming = applyHoming;
+                        this.game.projectiles.push(p1, p2);
+                    } else if (activeLevel === 5) {
+                        // Quintuple Shot - Divergent + 40% Homing per shot
+                        const divergence = 0.2; // 0, +/- 0.2, +/- 0.4
+                        for (let i = -2; i <= 2; i++) {
+                            const shotAngle = angle + i * divergence;
+                            const projectile = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, shotAngle);
+
+                            const homingChance = Math.random() < 0.4;
+                            projectile.speed = homingChance ? 7 : 10;
+                            projectile.velocity.x = Math.cos(shotAngle) * projectile.speed;
+                            projectile.velocity.y = Math.sin(shotAngle) * projectile.speed;
+                            projectile.damage = this.damage;
+                            projectile.isHoming = homingChance;
+                            this.game.projectiles.push(projectile);
+                        }
+                    } else if (activeLevel === 6) {
+                        // Arc Shot - Semi-circle + 2x Damage
+                        const projectile = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle);
+                        projectile.isArc = true;
+                        projectile.radius = 50;
+                        projectile.initialRadius = 50;
+                        projectile.damage = this.damage * 4;
+                        projectile.color = '#ff4d4d'; // Reddish arc
+                        projectile.speed = 12; // Slightly faster
+                        projectile.velocity.x = Math.cos(angle) * projectile.speed;
+                        projectile.velocity.y = Math.sin(angle) * projectile.speed;
+
+                        // Buff: 40% chance for homing on Redmoon Shot
+                        if (Math.random() < 0.4) {
+                            projectile.isHoming = true;
+                            projectile.speed = 9; // Slightly slower when homing
+                            projectile.velocity.x = Math.cos(angle) * projectile.speed;
+                            projectile.velocity.y = Math.sin(angle) * projectile.speed;
+                        }
+
+                        this.game.projectiles.push(projectile);
+                    } else if (activeLevel === 3) {
+                        // Triple Shot - Divergent (-40% spread)
+                        const divergence = 0.156;
+
+                        const p1 = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle - divergence);
+                        const p2 = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle + divergence);
+                        const p3 = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle);
+
+                        p1.speed = projectileSpeed; p2.speed = projectileSpeed; p3.speed = projectileSpeed;
+                        p1.velocity.x = Math.cos(angle - divergence) * p1.speed; p1.velocity.y = Math.sin(angle - divergence) * p1.speed;
+                        p2.velocity.x = Math.cos(angle + divergence) * p2.speed; p2.velocity.y = Math.sin(angle + divergence) * p2.speed;
+                        p3.velocity.x = Math.cos(angle) * p3.speed; p3.velocity.y = Math.sin(angle) * p3.speed;
+
+                        p1.damage = this.damage; p2.damage = this.damage; p3.damage = this.damage;
+                        p1.isHoming = applyHoming; p2.isHoming = applyHoming; p3.isHoming = applyHoming;
+                        this.game.projectiles.push(p1, p2, p3);
+                    }
+
+                    this.shootTimer = 0;
+                } else {
+                    this.shootTimer += deltaTime;
+                }
+            }
+        }
+    }
+
+    draw(ctx) {
+        // Shield Aura (draw behind player)
+        if (this.shieldTimer > 0) {
+            ctx.save();
+            ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+            // Flashing in the last 3s
+            let alpha = 0.3;
+            if (this.shieldTimer < 3000) {
+                // Flash at 10Hz
+                if (Math.floor(this.shieldTimer / 100) % 2 === 0) {
+                    alpha = 0.05;
+                }
+            }
+
+            ctx.fillStyle = `rgba(0, 255, 255, ${alpha})`;
+            ctx.strokeStyle = `rgba(0, 255, 255, ${alpha + 0.2})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0, 0, 90, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        // Rotate towards mouse
+        const angle = Math.atan2(
+            this.game.input.mouse.y - (this.y + this.height / 2),
+            this.game.input.mouse.x - (this.x + this.width / 2)
+        );
+        ctx.rotate(angle);
+
+        // Render
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+
+        if (this.maxHpLevel === 0) {
+            // Default Triangle
+            ctx.beginPath();
+            ctx.moveTo(20, 0);
+            ctx.lineTo(-15, 15);
+            ctx.lineTo(-10, 0);
+            ctx.lineTo(-15, -15);
+            ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.stroke();
+        } else if (this.maxHpLevel === 1) {
+            // "True Spaceship"
+            ctx.fillStyle = '#0a0';
+            ctx.beginPath();
+            ctx.moveTo(25, 0);
+            ctx.lineTo(-15, 20);
+            ctx.lineTo(-5, 5);
+            ctx.lineTo(-20, 0);
+            ctx.lineTo(-5, -5);
+            ctx.lineTo(-15, -20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Wings
+            ctx.beginPath();
+            ctx.moveTo(-5, 15);
+            ctx.lineTo(-5, 25);
+            ctx.lineTo(10, 10);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-5, -15);
+            ctx.lineTo(-5, -25);
+            ctx.lineTo(10, -10);
+            ctx.stroke();
+
+        } else if (this.maxHpLevel >= 2) {
+            // "Parruda"
+            ctx.fillStyle = '#aa0';
+            ctx.fillRect(-20, -10, 40, 20);
+            ctx.beginPath();
+            ctx.moveTo(20, -10);
+            ctx.lineTo(35, 0);
+            ctx.lineTo(20, 10);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#555';
+            ctx.fillRect(-25, -25, 15, 50);
+            ctx.strokeRect(-25, -25, 15, 50);
+        }
+
+
+        ctx.restore();
+    }
+
+    switchWeapon() {
+        if (this.weaponLevel <= 1) return;
+        this.currentWeaponLevel++;
+        if (this.currentWeaponLevel > this.weaponLevel) {
+            this.currentWeaponLevel = 1;
+        }
+    }
+}
+
+// --- js/Game.js ---
+
+
+
+
+
+
+
+
+class Game {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = this.canvas.getContext('2d');
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+
+        this.lastTime = 0;
+        this.isRunning = false;
+
+        this.input = new InputHandler(this);
+        this.background = new Background(this);
+
+        // Game State
+        this.entities = [];
+        this.projectiles = [];
+        this.drops = [];
+        this.floatingTexts = [];
+        this.explosions = [];
+        this.player = null;
+        this.score = 0;
+        this.credits = 0;
+        this.level = 1;
+        this.gameOver = false;
+
+        this.enemyTimer = 0;
+        this.enemyInterval = 1000;
+        this.explosionCheckTimer = 0;
+
+        // Boss State
+        this.boss = null;
+        this.bosses = []; // For twin bosses
+        this.bossDefeated7 = false;
+        this.bossDefeated50 = false;
+        this.bossDefeated100 = false;
+        this.bossDefeated300 = false;
+        this.bossDefeated490 = false;
+
+        this.lastNebulaLevel = 1;
+
+        // Healing Cooldown
+        this.healSpawnCooldown = 0; // ms
+
+        // Upgrade Tracking
+        this.upgradeLog = [];
+
+        this.animationId = null;
+        this.continuesRemaining = 20;
+
+        this.isRunning = false;
+        this.loop = this.loop.bind(this);
+    }
+
+    resize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.width = width;
+        this.height = height;
+        if (this.background) this.background.stars = [];
+        if (this.background) this.background.createStars();
+    }
+
+    start() {
+        this.initGame();
+    }
+
+    initGame() {
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        this.isRunning = true;
+        this.gameOver = false;
+        this.score = 0;
+        this.credits = 0;
+        this.level = 1;
+        this.entities = [];
+        this.projectiles = [];
+        this.drops = [];
+        this.floatingTexts = [];
+        this.explosions = [];
+
+        this.enemyTimer = 0;
+        this.enemyInterval = 1000;
+        this.explosionCheckTimer = 0;
+
+        this.boss = null;
+        this.bosses = [];
+        this.bossDefeated7 = false;
+        this.bossDefeated50 = false;
+        this.bossDefeated100 = false;
+        this.bossDefeated300 = false;
+        this.bossDefeated490 = false;
+        this.hasArmor1 = false;
+        this.hasArmor2 = false;
+        this.healSpawnCooldown = 0;
+        this.upgradeLog = [];
+
+        this.player = new Player(this);
+        console.log("Mission Initiated.");
+        this.updateUI();
+        this.lastTime = performance.now();
+        this.loop(this.lastTime);
+        const continueBtn = document.getElementById('continue-btn');
+        if (continueBtn) continueBtn.classList.add('hidden');
+    }
+
+    restart() {
+        this.start();
+    }
+
+    continueAfterDeath() {
+        if (this.continuesRemaining <= 0 || this.level < 20) return;
+
+        this.continuesRemaining--;
+        this.gameOver = false;
+        this.isRunning = true;
+
+        // Determine highest achieved checkpoint
+        let targetScore = 0;
+        let targetLevel = 1;
+
+        if (this.level >= 400) {
+            targetScore = 399000;
+            targetLevel = 400;
+        } else if (this.level >= 290) {
+            targetScore = 289000;
+            targetLevel = 290;
+        } else if (this.level >= 90) {
+            targetScore = 89000;
+            targetLevel = 90;
+        } else if (this.level >= 20) {
+            targetScore = 19000;
+            targetLevel = 20;
+        }
+
+        this.score = targetScore;
+        this.level = targetLevel;
+
+        // Restore Player
+        if (this.player) {
+            this.player.hp = this.player.maxHp;
+            this.player.x = this.width / 2;
+            this.player.y = this.height / 2;
+            this.player.shieldTimer = 0; // Reset shield
+        }
+
+        // Clear screen
+        this.entities = [];
+        this.projectiles = [];
+        this.explosions = [];
+        this.floatingTexts = [];
+        this.boss = null;
+        this.bosses = [];
+
+        this.updateUI();
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        this.lastTime = performance.now();
+        this.loop(this.lastTime);
+    }
+
+    loop(timeStamp) {
+        if (!this.isRunning) return;
+
+        const deltaTime = timeStamp - this.lastTime;
+        this.lastTime = timeStamp;
+
+        this.update(deltaTime);
+        this.draw();
+
+        this.animationId = requestAnimationFrame(this.loop);
+    }
+
+    update(deltaTime) {
+        if (!this.player) return;
+
+        // Healing Cooldown
+        if (this.healSpawnCooldown > 0) {
+            this.healSpawnCooldown -= deltaTime;
+            if (this.healSpawnCooldown < 0) this.healSpawnCooldown = 0;
+        }
+
+        this.background.update(deltaTime);
+        this.player.update(deltaTime);
+
+        // Difficulty Scaling: Increase enemies every 10 levels (10000 points)
+        // Level 1 = 0-999, Level 10 = 9000-9999
+        // Spawn interval decreases by 50ms per level, capped at 200ms
+        // Synchronize State
+        this.level = Math.floor(this.score / 1000) + 1;
+
+        // Difficulty Scaling
+
+        // Background: Galaxies and Nebulae every 20 levels
+        if (this.level >= this.lastNebulaLevel + 20) {
+            this.lastNebulaLevel = this.level;
+            this.background.createNebula();
+        }
+
+        // Spawn Rate Cap (Level 70+: Stop increasing density)
+        let effectiveLevel = Math.min(this.level, 70);
+        const difficultyModifier = Math.floor(effectiveLevel / 10) * 100;
+        this.enemyInterval = Math.max(200, 1000 - (effectiveLevel * 20) - difficultyModifier);
+
+        // Level 400-500: Increase enemy density every 30 levels
+        if (this.level >= 400 && this.level < 500) {
+            const tiers = Math.floor((this.level - 400) / 30);
+            this.enemyInterval = Math.max(80, this.enemyInterval - tiers * 50);
+        }
+
+        // Global Modifiers - Tiered Scaling
+        if (this.level >= 400) {
+            this.globalFollowerSpeedMult = 7;
+            this.globalEnemyFireRateMult = 4;
+            this.globalEnemyProjectileSpeedMult = 4;
+            this.globalCollisionDamageMult = 2.5;
+        } else if (this.level >= 300) {
+            this.globalFollowerSpeedMult = 5;
+            this.globalEnemyFireRateMult = 3;
+            this.globalEnemyProjectileSpeedMult = 3;
+            this.globalCollisionDamageMult = 2;
+        } else if (this.level >= 150) {
+            this.globalFollowerSpeedMult = 3;
+            this.globalEnemyFireRateMult = (this.level >= 80) ? 2 : 1;
+            this.globalEnemyProjectileSpeedMult = (this.level >= 80) ? 2 : 1;
+            this.globalCollisionDamageMult = 1;
+        } else {
+            this.globalFollowerSpeedMult = 1;
+            this.globalEnemyFireRateMult = (this.level >= 80) ? 2 : 1;
+            this.globalEnemyProjectileSpeedMult = (this.level >= 80) ? 2 : 1;
+            this.globalCollisionDamageMult = 1;
+        }
+
+        // Boss Spawn Logic
+        if (this.level >= 50 && !this.bossDefeated50 && !this.boss && this.bosses.length === 0) {
+            this.boss = new Boss(this, 50);
+            this.entities.push(this.boss);
+        } else if (this.level >= 100 && this.bossDefeated50 && !this.bossDefeated100 && !this.boss && this.bosses.length === 0) {
+            this.boss = new Boss(this, 100);
+            this.entities.push(this.boss);
+        } else if (this.level >= 300 && this.bossDefeated100 && !this.bossDefeated300 && !this.boss && this.bosses.length === 0) {
+            this.boss = new Boss(this, 300);
+            this.entities.push(this.boss);
+        } else if (this.level >= 490 && this.bossDefeated300 && !this.bossDefeated490 && !this.boss && this.bosses.length === 0) {
+            // Twin Bosses
+            const twin1 = new Boss(this, 490);
+            twin1.twinOffset = -120;
+            twin1.bossName = '👁 GÊMEO ALFA 👁';
+            const twin2 = new Boss(this, 490);
+            twin2.twinOffset = 120;
+            twin2.bossName = '👁 GÊMEO BETA 👁';
+            twin2.moveTimer = 3000; // Phase offset for different movement
+            this.bosses = [twin1, twin2];
+            this.entities.push(twin1, twin2);
+        } else if (this.level >= 7 && !this.bossDefeated7 && !this.boss && this.bosses.length === 0) {
+            // New Early Boss: Perseguidor Rei
+            this.boss = new Boss(this, 7);
+            this.entities.push(this.boss);
+        }
+
+
+        // Update Boss(es)
+        if (this.boss && !this.boss.markedForDeletion) {
+            this.boss.update(deltaTime);
+        } else if (this.boss && this.boss.markedForDeletion) {
+            this.boss = null;
+        }
+
+        this.bosses.forEach(b => {
+            if (!b.markedForDeletion) b.update(deltaTime);
+        });
+        if (this.bosses.length > 0 && this.bosses.every(b => b.markedForDeletion)) {
+            this.bosses = [];
+        }
+
+        // Determine spawn suppression
+        let spawnSuppressed = false;
+        let spawnReducedRate = 1; // 1 = normal, 10 = 1/10th, 2 = 1/2, etc.
+
+        const activeBoss = this.boss || (this.bosses.length > 0 ? this.bosses[0] : null);
+        if (activeBoss && !activeBoss.markedForDeletion) {
+            if (activeBoss.bossLevel === 7 || activeBoss.bossLevel === 50 || activeBoss.bossLevel === 100) {
+                spawnSuppressed = true;
+            } else if (activeBoss.bossLevel === 300 || activeBoss.bossLevel === 490) {
+                spawnReducedRate = 10; // 1/10th spawn rate
+            }
+        }
+
+        // Sub-boss spawn reduction (1/2)
+        const subbossActive = this.entities.some(e => e.type === 'SUBBOSS' && !e.markedForDeletion);
+        if (subbossActive && !spawnSuppressed) {
+            spawnReducedRate = Math.max(spawnReducedRate, 2);
+        }
+
+        // Spawner
+        if (!spawnSuppressed) {
+            const effectiveInterval = this.enemyInterval * spawnReducedRate;
+            if (this.enemyTimer > effectiveInterval) {
+                let type = 'NORMAL';
+                const random = Math.random();
+                const score = this.score;
+
+                // Sub-boss level 5+ (1/100 chance)
+                if (this.level >= 5 && random < 0.01) {
+                    type = 'SUBBOSS';
+                } else if (this.level >= 300 && random < 0.15) {
+                    type = 'HYBRID';
+                } else if (this.level >= 300 && random < 0.30) {
+                    type = 'FOLLOWER';
+                } else if (score >= 49000 && random < 0.03) {
+                    type = 'HYBRID';
+                } else if (score >= 39000 && random < 0.12) {
+                    type = 'FOLLOWER';
+                } else if (score >= 29000 && random < 0.05) {
+                    type = 'FOLLOWER';
+                } else if (score >= 19000 && random < 0.10) {
+                    type = 'SHOOTER';
+                } else if (score >= 9000 && random < 0.05) {
+                    type = 'SHOOTER';
+                }
+
+                const enemy = new Enemy(this, type);
+
+                // HP Scaling: +10% every 90 levels after 110
+                if (this.level >= 110) {
+                    const hpMult = 1 + (Math.floor((this.level - 110) / 90) + 1) * 0.1;
+                    enemy.hp *= hpMult;
+                    enemy.maxHp = enemy.hp;
+                }
+
+                this.entities.push(enemy);
+                this.enemyTimer = 0;
+            } else {
+                this.enemyTimer += deltaTime;
+            }
+        } else {
+            this.enemyTimer = 0;
+        }
+
+        // Projectiles
+        this.projectiles.forEach(projectile => projectile.update(deltaTime));
+        this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+
+        // Remove enemy projectiles if they hit player or get neutralized by Redmoon
+        this.projectiles.forEach(projectile => {
+            if (projectile.isEnemy && !projectile.markedForDeletion) {
+                // Hit player
+                if (this.player && checkCollision(projectile, this.player)) {
+                    projectile.markedForDeletion = true;
+                    const dmg = 10;
+                    this.player.takeDamage(dmg);
+                }
+
+                // Neutralization by Redmoon Shot
+                this.projectiles.forEach(p2 => {
+                    if (p2.isArc && !p2.isEnemy && !p2.markedForDeletion) {
+                        const dist = Math.hypot(p2.x - projectile.x, p2.y - projectile.y);
+                        if (dist < p2.radius) {
+                            // Homing is IMMUNE
+                            if (projectile.isHoming) return;
+
+                            const chance = 0.1428; // 1/7
+                            if (Math.random() < chance) {
+                                projectile.markedForDeletion = true;
+                                this.spawnFloatingText(projectile.x, projectile.y, "NEUTRALIZED", "#00ffff");
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        // Drops
+        this.drops.forEach(drop => {
+            drop.update(deltaTime);
+            if (this.player && checkCollision(this.player, drop)) {
+                drop.markedForDeletion = true;
+                if (drop.type === 'OBLITERATOR') {
+                    if (this.player.obliteratorAmmo < 3) {
+                        this.player.obliteratorAmmo++;
+                    }
+                } else if (drop.type === 'ARMOR_1') {
+                    if (!this.hasArmor1) {
+                        this.hasArmor1 = true;
+                        this.player.maxHpLevel = 1;
+                        this.player.maxHp = 150; // +50%
+                        this.player.hp = this.player.maxHp;
+                    }
+                } else if (drop.type === 'ARMOR_2') {
+                    if (!this.hasArmor2) {
+                        this.hasArmor2 = true;
+                        this.player.maxHpLevel = 2;
+                        this.player.maxHp = 200; // ~+33% of 150
+                        this.player.hp = this.player.maxHp;
+                    }
+                } else if (drop.type === 'SHIELD') {
+                    this.player.shieldTimer = 15000;
+                    this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, 'ESCUDO ATIVADO (15s)!', '#0ff');
+                } else if (drop.type === 'REPAIR') {
+                    this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
+                    this.healSpawnCooldown = 120000; // 2 minutes
+                    this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
+                }
+                this.updateUI();
+            }
+        });
+        this.drops = this.drops.filter(d => !d.markedForDeletion);
+
+        // Enemies (skip boss - updated separately)
+        this.entities.forEach(entity => {
+            if (entity.isBoss) return; // Boss updated above
+            entity.update(deltaTime);
+
+            // Collision: Player vs Enemy
+            if (this.player && checkCollision(this.player, entity)) {
+                if (this.player.shieldTimer > 0) {
+                    // Hit-kill for common enemies when shielded
+                    if (!entity.isBoss) {
+                        entity.takeDamage(999999); // Hit-kill
+                        this.spawnFloatingText(entity.x + entity.width / 2, entity.y, "CRUSHED!", "#0ff");
+                    }
+                    // Player takes NO damage
+                } else {
+                    if (!entity.isBoss) {
+                        entity.markedForDeletion = true;
+                    }
+                    const baseDamage = entity.isBoss ? 50 : 20;
+                    const collisionMult = (entity.type === 'NORMAL') ? (this.globalCollisionDamageMult || 1) : 1;
+                    const dmg = Math.floor(baseDamage * collisionMult);
+                    this.player.takeDamage(dmg);
+                }
+            }
+
+            // Collision: Projectile vs Enemy
+            this.projectiles.forEach(projectile => {
+                if (!projectile.isEnemy && !projectile.markedForDeletion) {
+                    let collided = false;
+                    if (projectile.isArc) {
+                        const dist = Math.hypot(
+                            (projectile.x) - (entity.x + entity.width / 2),
+                            (projectile.y) - (entity.y + entity.height / 2)
+                        );
+                        if (dist < projectile.radius + 20) collided = true;
+                    } else {
+                        collided = checkCollision(projectile, entity);
+                    }
+
+                    if (collided) {
+                        const dmg = projectile.damage;
+                        this.spawnFloatingText(entity.x + entity.width / 2, entity.y, `-${dmg}`, '#ffff00');
+                        entity.takeDamage(dmg);
+
+                        // 1/7 chance for Redmoon Barrage on Arc Shot hit
+                        if (projectile.isArc && Math.random() < 0.1428) { // 1/7
+                            this.triggerRedmoonBarrage();
+                        }
+
+                        projectile.markedForDeletion = true;
+                    }
+                }
+            });
+        });
+
+        // Boss collision handling (single bosses)
+        const currentBoss = this.boss;
+        if (currentBoss && !currentBoss.markedForDeletion) {
+            if (this.player && checkCollision(this.player, currentBoss)) {
+                const dmg = 50;
+                this.player.takeDamage(dmg);
+            }
+            this.projectiles.forEach(projectile => {
+                if (currentBoss.markedForDeletion) return; // Boss already dead this frame
+                if (!projectile.isEnemy && !projectile.markedForDeletion) {
+                    let collided = false;
+                    if (projectile.isArc) {
+                        const dist = Math.hypot(
+                            (projectile.x) - (currentBoss.x + currentBoss.width / 2),
+                            (projectile.y) - (currentBoss.y + currentBoss.height / 2)
+                        );
+                        if (dist < projectile.radius + 40) collided = true; // Bosses are bigger
+                    } else {
+                        collided = checkCollision(projectile, currentBoss);
+                    }
+
+                    if (collided) {
+                        const dmg = projectile.damage;
+                        this.spawnFloatingText(currentBoss.x + currentBoss.width / 2, currentBoss.y, `-${dmg}`, '#ffff00');
+                        currentBoss.takeDamage(dmg);
+
+                        if (projectile.isArc && Math.random() < 0.1428) {
+                            this.triggerRedmoonBarrage();
+                        }
+
+                        projectile.markedForDeletion = true;
+                    }
+                }
+            });
+        }
+
+        // Twin boss collision handling
+        this.bosses.forEach(b => {
+            if (b.markedForDeletion) return;
+            if (this.player && checkCollision(this.player, b)) {
+                const dmg = 50;
+                this.player.takeDamage(dmg);
+            }
+            this.projectiles.forEach(projectile => {
+                if (b.markedForDeletion) return; // Boss already dead this frame
+                if (!projectile.isEnemy && !projectile.markedForDeletion) {
+                    let collided = false;
+                    if (projectile.isArc) {
+                        const dist = Math.hypot(
+                            (projectile.x) - (b.x + b.width / 2),
+                            (projectile.y) - (b.y + b.height / 2)
+                        );
+                        if (dist < projectile.radius + 40) collided = true;
+                    } else {
+                        collided = checkCollision(projectile, b);
+                    }
+
+                    if (collided) {
+                        const dmg = projectile.damage;
+                        this.spawnFloatingText(b.x + b.width / 2, b.y, `-${dmg}`, '#ffff00');
+                        b.takeDamage(dmg);
+
+                        if (projectile.isArc && Math.random() < 0.1428) {
+                            this.triggerRedmoonBarrage();
+                        }
+
+                        projectile.markedForDeletion = true;
+                    }
+                }
+            });
+        });
+
+        // Check twin bosses
+        this.bosses = this.bosses.filter(b => !b.markedForDeletion);
+        if (this.bossDefeated300 && !this.bossDefeated490 && this.bosses.length === 0 && this.level >= 490) {
+            // Check if twins were spawned and both are now dead
+            const anyTwinAlive = this.entities.some(e => e.isBoss && e.bossLevel === 490 && !e.markedForDeletion);
+            if (!anyTwinAlive) {
+                this.bossDefeated490 = true;
+                this.triggerVictory(); // Win only on twin death
+            }
+        }
+
+        this.entities = this.entities.filter(entity => !entity.markedForDeletion);
+
+        // Exploding Enemies (Level 5+): 5% of enemies explode every 2 seconds — EXCLUDE bosses
+        if (this.level >= 5) {
+            this.explosionCheckTimer += deltaTime;
+            if (this.explosionCheckTimer >= 2000) {
+                this.explosionCheckTimer = 0;
+                this.entities.forEach(entity => {
+                    if (!entity.markedForDeletion && !entity.isBoss && Math.random() < 0.05) {
+                        this.triggerEnemyExplosion(entity);
+                    }
+                });
+            }
+        }
+
+        // Update Floating Texts
+        this.floatingTexts.forEach(ft => {
+            ft.y -= 1;
+            ft.life -= deltaTime;
+            ft.alpha = Math.max(0, ft.life / ft.maxLife);
+        });
+        this.floatingTexts = this.floatingTexts.filter(ft => ft.life > 0);
+
+        // Update Explosions
+        this.explosions.forEach(ex => {
+            ex.life -= deltaTime;
+            ex.alpha = Math.max(0, ex.life / ex.maxLife);
+            ex.currentRadius = ex.radius * (1 - ex.alpha) + ex.radius * 0.3;
+        });
+        this.explosions = this.explosions.filter(ex => ex.life > 0);
+
+        // Update UI
+        this.updateUI();
+    }
+
+    draw() {
+        // Clear screen with trail effect
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        if (this.background) this.background.draw(this.ctx);
+
+        if (this.player) this.player.draw(this.ctx);
+
+        this.drops.forEach(drop => drop.draw(this.ctx));
+        this.projectiles.forEach(projectile => projectile.draw(this.ctx));
+        this.entities.forEach(entity => entity.draw(this.ctx));
+
+        // Draw Explosions
+        this.explosions.forEach(ex => {
+            this.ctx.save();
+            this.ctx.globalAlpha = ex.alpha;
+            this.ctx.beginPath();
+            this.ctx.arc(ex.x, ex.y, ex.currentRadius, 0, Math.PI * 2);
+            const baseColor = ex.color || 'rgba(255, 100, 0, ';
+            this.ctx.fillStyle = `${baseColor}${ex.alpha * 0.5})`;
+            this.ctx.fill();
+            this.ctx.strokeStyle = ex.color ? `rgba(0, 255, 255, ${ex.alpha})` : `rgba(255, 200, 0, ${ex.alpha})`;
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+            // Inner glow
+            this.ctx.beginPath();
+            this.ctx.arc(ex.x, ex.y, ex.currentRadius * 0.5, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(255, 255, 200, ${ex.alpha * 0.7})`;
+            this.ctx.fill();
+            this.ctx.restore();
+        });
+
+        // Draw Floating Damage Texts
+        this.floatingTexts.forEach(ft => {
+            this.ctx.save();
+            this.ctx.globalAlpha = ft.alpha;
+            this.ctx.font = 'bold 14px Arial';
+            this.ctx.fillStyle = ft.color;
+            this.ctx.strokeStyle = 'black';
+            this.ctx.lineWidth = 2;
+            this.ctx.textAlign = 'center';
+            this.ctx.strokeText(ft.text, ft.x, ft.y);
+            this.ctx.fillText(ft.text, ft.x, ft.y);
+            this.ctx.restore();
+        });
+
+        // Draw Score in top-right
+        this.ctx.save();
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.fillStyle = '#0ff';
+        this.ctx.textAlign = 'right';
+        this.ctx.shadowColor = '#0ff';
+        this.ctx.shadowBlur = 10;
+        this.ctx.fillText(`Score: ${this.score}`, this.width - 20, 35);
+        this.ctx.restore();
+    }
+
+    triggerGameOver() {
+        this.gameOver = true;
+        this.isRunning = false;
+        const gameOverScreen = document.getElementById('game-over-screen');
+        if (gameOverScreen) {
+            gameOverScreen.classList.remove('hidden');
+            const scoreDisplay = document.getElementById('final-score');
+            if (scoreDisplay) scoreDisplay.innerText = this.score;
+            // Level
+            const levelDisplay = document.getElementById('final-level');
+            if (levelDisplay) levelDisplay.innerText = this.level;
+
+            // Continue Button (Multi-checkpoint: Lvl 20, 90, 290, 400)
+            const continueBtn = document.getElementById('continue-btn');
+            const continueCount = document.getElementById('continue-count');
+            if (continueBtn && this.level >= 20 && this.continuesRemaining > 0) {
+                continueBtn.classList.remove('hidden');
+                if (continueCount) continueCount.innerText = this.continuesRemaining;
+            } else if (continueBtn) {
+                continueBtn.classList.add('hidden');
+            }
+        }
+    }
+
+    triggerVictory() {
+        this.gameOver = true;
+        this.isRunning = false;
+        this.entities = [];
+        this.projectiles = [];
+        this.drops = [];
+        const gameOverScreen = document.getElementById('game-over-screen');
+        if (gameOverScreen) {
+            gameOverScreen.classList.remove('hidden');
+            // Override title
+            const title = gameOverScreen.querySelector('h1');
+            if (title) {
+                title.textContent = '🏆 VOCÊ VENCEU A GUERRA ESPACIAL! 🏆';
+                title.style.cssText = 'color: gold; font-size: 3rem; text-shadow: 0 0 30px gold; letter-spacing: 3px;';
+            }
+            const scoreDisplay = document.getElementById('final-score');
+            if (scoreDisplay) scoreDisplay.innerText = this.score;
+            const levelDisplay = document.getElementById('final-level');
+            if (levelDisplay) levelDisplay.innerText = 500;
+            // Change restart button text
+            const restartBtn = document.getElementById('restart-btn');
+            if (restartBtn) restartBtn.textContent = 'JOGAR NOVAMENTE';
+        }
+    }
+
+    spawnFloatingText(x, y, text, color) {
+        this.floatingTexts.push({
+            x: x + (Math.random() - 0.5) * 20,
+            y: y,
+            text: text,
+            color: color,
+            life: 800,
+            maxLife: 800,
+            alpha: 1
+        });
+    }
+
+    triggerEnemyExplosion(enemy) {
+        const ex = enemy.x + enemy.width / 2;
+        const ey = enemy.y + enemy.height / 2;
+        const radius = 240;
+
+        enemy.markedForDeletion = true;
+
+        this.explosions.push({
+            x: ex, y: ey, radius: radius,
+            currentRadius: 10,
+            life: 600, maxLife: 600, alpha: 1
+        });
+
+        if (this.player) {
+            const px = this.player.x + this.player.width / 2;
+            const py = this.player.y + this.player.height / 2;
+            const dist = Math.hypot(px - ex, py - ey);
+            if (dist <= radius) {
+                const dmg = 30;
+                this.player.hp -= dmg;
+                this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, `-${dmg} 💥`, '#ff6600');
+                if (this.player.hp <= 0) this.triggerGameOver();
+            }
+        }
+    }
+
+    triggerMegaExplosion(ex, ey) {
+        const radius = 720;
+        const damageMult = 10;
+        const explosionDamage = this.player ? this.player.damage * damageMult : 100;
+
+        // Visual effect - Cyan color
+        this.explosions.push({
+            x: ex, y: ey, radius: radius,
+            currentRadius: 20,
+            color: 'rgba(0, 255, 255, ',
+            life: 1000, maxLife: 1000, alpha: 1
+        });
+
+        // Damage enemies in range
+        this.entities.forEach(entity => {
+            const dist = Math.hypot(
+                (entity.x + entity.width / 2) - ex,
+                (entity.y + entity.height / 2) - ey
+            );
+            if (dist <= radius) {
+                this.spawnFloatingText(entity.x + entity.width / 2, entity.y, `ULTIMATE 💥 -${explosionDamage}`, '#00ffff');
+                entity.takeDamage(explosionDamage);
+            }
+        });
+
+        // Player is immune (no damage check needed)
+        if (this.player) {
+            this.spawnFloatingText(this.player.x, this.player.y, "CYAN BLAST IMMUNITY!", "#0ff");
+        }
+    }
+
+    triggerRedmoonBarrage() {
+        // Redmoon Barrage: 3 Mega Explosions in random top-half locations
+        for (let i = 0; i < 3; i++) {
+            const rx = Math.random() * this.width;
+            const ry = Math.random() * (this.height / 2);
+            this.triggerMegaExplosion(rx, ry);
+        }
+    }
+
+    onBossDeath(boss) {
+        // 1. Set Defeated Flags
+        if (boss.bossLevel === 7) this.bossDefeated7 = true;
+        if (boss.bossLevel === 50) this.bossDefeated50 = true;
+        if (boss.bossLevel === 100) this.bossDefeated100 = true;
+        if (boss.bossLevel === 300) this.bossDefeated300 = true;
+
+        if (boss.bossLevel === 490) {
+            // Check if both twins are dead
+            const anyTwinAlive = this.bosses.some(b => b !== boss && !b.markedForDeletion);
+            if (!anyTwinAlive) {
+                this.bossDefeated490 = true;
+                this.triggerVictory();
+            }
+        }
+
+        // 2. Clear Boss-specific Projectiles
+        this.projectiles.forEach(p => {
+            if (p.isBossBeam) p.markedForDeletion = true;
+        });
+
+        // 3. Visual Effects
+        const cx = boss.x + boss.width / 2;
+        const cy = boss.y + boss.height / 2;
+        for (let i = 0; i < 5; i++) {
+            this.explosions.push({
+                x: cx + (Math.random() - 0.5) * 100,
+                y: cy + (Math.random() - 0.5) * 100,
+                radius: 120 + Math.random() * 80,
+                currentRadius: 10,
+                life: 800, maxLife: 800, alpha: 1
+            });
+        }
+        this.spawnFloatingText(cx, cy - 40, 'BOSS DERROTADO!', '#ffdd00');
+
+        // 4. Nullify single boss reference if applicable
+        if (this.boss === boss) this.boss = null;
+    }
+
+    toggleShop() {
+        this.isRunning = !this.isRunning;
+        const shopScreen = document.getElementById('shop-screen');
+        if (!shopScreen) return;
+
+        if (!this.isRunning) {
+            shopScreen.classList.remove('hidden');
+            if (this.animationId) cancelAnimationFrame(this.animationId);
+        } else {
+            shopScreen.classList.add('hidden');
+            this.lastTime = performance.now();
+            this.loop(this.lastTime);
+        }
+    }
+
+    buyUpgrade(type) {
+        if (!this.player) return;
+
+        let cost = 0;
+        let purchased = false;
+        let upgradeName = '';
+        switch (type) {
+            case 'health':
+                cost = 100;
+                if (this.credits >= cost && this.player.hp < this.player.maxHp) {
+                    this.credits -= cost;
+                    this.player.hp = Math.min(this.player.hp + 50, this.player.maxHp);
+                    purchased = true;
+                    upgradeName = 'Hull Repair (+50 HP)';
+                }
+                break;
+            case 'speed':
+                cost = 200;
+                // Limit to 7 upgrades
+                const speedUpgrades = this.upgradeLog.filter(u => u === 'speed').length;
+                if (this.credits >= cost && speedUpgrades < 7) {
+                    this.credits -= cost;
+                    this.player.speed += 1;
+                    purchased = true;
+                    upgradeName = `Engine Boost (Speed: ${this.player.speed})`;
+                    this.upgradeLog.push('speed');
+
+                    // Check if max reached
+                    if (speedUpgrades + 1 >= 7) {
+                        const btn = document.querySelector('.shop-item[data-upgrade="speed"] .buy-btn');
+                        if (btn) {
+                            btn.innerText = 'BOOST MAXIMUN';
+                            // btn.disabled = true; // Optional: let them click and fail naturally or disable
+                        }
+                        const p = document.querySelector('.shop-item[data-upgrade="speed"] p');
+                        if (p) p.innerText = 'Boost Maximun Reached';
+                    }
+                }
+                break;
+            case 'damage':
+                cost = 500;
+                if (this.credits >= cost) {
+                    this.credits -= cost;
+                    this.player.damage += 5;
+                    purchased = true;
+                    upgradeName = `Weapon Upgrade (Dmg: ${this.player.damage})`;
+                }
+                break;
+            case 'weapon':
+                cost = 1000;
+                if (this.credits >= cost) {
+                    if (this.player.weaponLevel < 3) {
+                        this.credits -= cost;
+                        this.player.weaponLevel++;
+                        purchased = true;
+                        upgradeName = `Multi Shot (Lv ${this.player.weaponLevel})`;
+                    }
+                }
+                break;
+            case 'homing':
+                cost = 2000;
+                if (this.credits >= cost && !this.player.hasHoming) {
+                    this.credits -= cost;
+                    this.player.hasHoming = true;
+                    purchased = true;
+                    upgradeName = 'Homing Missiles';
+                }
+                break;
+            case 'obliterator':
+                cost = 2500;
+                if (this.credits >= cost && this.player.obliteratorAmmo < 3) {
+                    this.credits -= cost;
+                    this.player.obliteratorAmmo++;
+                    purchased = true;
+                    upgradeName = `Obliterator (x${this.player.obliteratorAmmo})`;
+                }
+                break;
+            case 'laser':
+                cost = 5000;
+                if (this.credits >= cost && this.player.weaponLevel < 4 && this.level >= 250) {
+                    this.credits -= cost;
+                    this.player.weaponLevel = Math.max(this.player.weaponLevel, 4);
+                    this.player.currentWeaponLevel = 4;
+                    purchased = true;
+                    upgradeName = 'Laser Cannon';
+                }
+                break;
+            case 'quintuple':
+                cost = 3000;
+                if (this.credits >= cost && this.player.weaponLevel < 5 && this.level >= 200) {
+                    this.credits -= cost;
+                    this.player.weaponLevel = Math.max(this.player.weaponLevel, 5);
+                    this.player.currentWeaponLevel = 5;
+                    purchased = true;
+                    upgradeName = 'Quintuple Shot';
+                }
+                break;
+            case 'redmoon':
+                cost = 12000;
+                if (this.credits >= cost && this.player.weaponLevel < 6 && this.level >= 400) {
+                    this.credits -= cost;
+                    this.player.weaponLevel = Math.max(this.player.weaponLevel, 6);
+                    this.player.currentWeaponLevel = 6;
+                    purchased = true;
+                    upgradeName = 'Endgame redmoon-gun';
+                }
+                break;
+        }
+        this.updateUI();
+    }
+
+    fireObliterator() {
+        if (!this.player || this.player.obliteratorAmmo <= 0) return;
+
+        this.player.obliteratorAmmo--;
+        this.updateUI();
+
+        // Kill all enemies (except bosses)
+        this.entities.forEach(entity => {
+            if (entity.isBoss) return; // Bosses are immune!
+
+            entity.hp = 0;
+            entity.markedForDeletion = true;
+            this.score += entity.scoreValue;
+            this.credits += entity.creditsValue;
+        });
+
+        // Visual flash
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.top = '0';
+        flash.style.left = '0';
+        flash.style.width = '100vw';
+        flash.style.height = '100vh';
+        flash.style.backgroundColor = 'white';
+        flash.style.opacity = '0.8';
+        flash.style.pointerEvents = 'none';
+        flash.style.transition = 'opacity 0.5s';
+        document.body.appendChild(flash);
+        setTimeout(() => {
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 500);
+        }, 50);
+    }
+
+    onEnemyDeath(enemy) {
+        const random = Math.random();
+
+        // Level 450+ Credit Buff: +200% (3x total)
+        if (this.level >= 450) {
+            this.credits += enemy.creditsValue * 2; // Adding 200% extra
+        }
+
+        // 1. Escudo (Prioridade 1)
+        if (this.player) {
+            let canDrop = false;
+            // Level 400+ Condition: 2 sequential damages
+            if (this.level >= 400) {
+                if (this.player.damageSequenceCount >= 2) {
+                    canDrop = true;
+                    this.player.damageSequenceCount = 0; // Reset after drop chance
+                }
+            } else if (this.player.hp <= 50) {
+                // Legacy condition for lower levels
+                canDrop = true;
+            }
+
+            if (canDrop && random < 0.1) { // 1/10
+                this.createDrop(enemy.x, enemy.y, 'SHIELD');
+                return;
+            }
+        }
+
+        // 2. Reparo (Prioridade 2): 1/40 chance se Lvl 30+ e sem cooldown
+        if (this.level >= 30 && this.healSpawnCooldown <= 0) {
+            if (random < 0.025) { // 1/40
+                this.createDrop(enemy.x, enemy.y, 'REPAIR');
+                return;
+            }
+        }
+
+        // 3. ARMOR 2: Level 90+, 1/120 chance
+        if (this.level >= 90 && !this.hasArmor2 && this.hasArmor1) {
+            if (random < (1 / 120)) {
+                this.createDrop(enemy.x, enemy.y, 'ARMOR_2');
+                return;
+            }
+        }
+
+        // 4. ARMOR 1: Level 30+, 1/50 chance
+        if (this.level >= 30 && !this.hasArmor1) {
+            if (random < 0.02) {
+                this.createDrop(enemy.x, enemy.y, 'ARMOR_1');
+                return;
+            }
+        }
+
+        // 5. Obliterator
+        let nukeChance = 0.05;
+        if (this.level >= 120) nukeChance = 1 / 120;
+        else if (this.level >= 70) nukeChance = 1 / 60;
+
+        if (random < nukeChance) {
+            this.createDrop(enemy.x, enemy.y, 'OBLITERATOR');
+        }
+    }
+
+    // Drops logic handled in createDrop
+
+    createDrop(x, y, type) {
+        // Import must be handled at top, assume we add it later or dynamic import? No, static import.
+        // Or if I'm lazy, I can define Drop here if I can't modify top of file easily with replace_file_content... 
+        // No, I should add import at the top separately.
+        // Wait, for this tool call, I can't add import at line 4 easily without a separate call or multi_replace.
+        // I'll stick to logic here and modify import in next call.
+
+        this.drops.push(new Drop(this, x, y, type));
+    }
+
+    updateUI() {
+        if (document.getElementById('score-display')) document.getElementById('score-display').innerText = this.score;
+        if (document.getElementById('hp-display')) document.getElementById('hp-display').innerText = this.player ? this.player.hp : 0;
+        if (document.getElementById('credits-display')) document.getElementById('credits-display').innerText = this.credits;
+        if (document.getElementById('level-display')) document.getElementById('level-display').innerText = this.level;
+        if (document.getElementById('ammo-display')) document.getElementById('ammo-display').innerText = this.player ? this.player.obliteratorAmmo : 0;
+        if (document.getElementById('weapon-display')) document.getElementById('weapon-display').innerText = this.player ? this.player.currentWeaponLevel : 1;
+    }
+}
+
+// --- js/main.js ---
+
+
+window.addEventListener('load', () => {
+    const canvas = document.getElementById('gameCanvas');
+    const game = new Game(canvas);
+
+    // UI Buttons
+    document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-screen').classList.add('hidden');
+        game.start();
+    });
+
+    document.getElementById('restart-btn').addEventListener('click', () => {
+        const goScreen = document.getElementById('game-over-screen');
+        goScreen.classList.add('hidden');
+        // Reset title in case it was changed by victory
+        const title = goScreen.querySelector('h1');
+        if (title) {
+            title.textContent = 'MISSION FAILED';
+            title.style.cssText = '';
+        }
+        game.restart();
+    });
+
+    document.getElementById('continue-btn').addEventListener('click', () => {
+        const goScreen = document.getElementById('game-over-screen');
+        goScreen.classList.add('hidden');
+        game.continueAfterDeath();
+    });
+
+    // Shop Toggle (Key 'P' or similar, or a button if we had one. For now let's add a key listener)
+    window.addEventListener('keydown', (e) => {
+        // Weapon Switching
+        if (e.key.toLowerCase() === 'q' && game.player) {
+            game.player.switchWeapon();
+        }
+        // Obliterator
+        if (e.key.toLowerCase() === 'e') {
+            game.fireObliterator();
+        }
+        if (e.key.toLowerCase() === 'p') {
+            game.toggleShop();
+        }
+    });
+
+    document.getElementById('close-shop-btn').addEventListener('click', () => {
+        game.toggleShop();
+    });
+
+    document.querySelectorAll('.buy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const item = e.target.parentElement;
+            const type = item.getAttribute('data-upgrade');
+            game.buyUpgrade(type);
+        });
+    });
+
+    // Global Button Polish (Scale and Color Feedback)
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => {
+            const colors = ['#f0f', '#0ff', '#ff0', '#0f0', '#f00', '#fff'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            btn.dataset.originalColor = btn.style.backgroundColor || '';
+            btn.style.backgroundColor = randomColor;
+        });
+        btn.addEventListener('mouseup', () => {
+            setTimeout(() => {
+                btn.style.backgroundColor = btn.dataset.originalColor || '';
+            }, 100);
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.backgroundColor = btn.dataset.originalColor || '';
+        });
+    });
+
+    // Initial resize
+    game.resize(window.innerWidth, window.innerHeight);
+    window.addEventListener('resize', () => {
+        game.resize(window.innerWidth, window.innerHeight);
+    });
+});
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space RPG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-layer">
+            <div id="hud">
+                <div class="stat-box">HP: <span id="hp-display">100</span></div>
+                <div class="stat-box">XP: <span id="xp-display">0</span></div>
+                <div class="stat-box">Level: <span id="level-display">1</span></div>
+                <div class="stat-box">Credits: <span id="credits-display">0</span></div>
+                <div class="stat-box">Weapon: Lv <span id="weapon-display">1</span> (Q)</div>
+                <div class="stat-box" style="color: #ff4d4d;">Nuke: <span id="ammo-display">0</span> (E)</div>
+                <div class="stat-box" style="border-color: #f0f; color: #f0f;">Press 'P' for Shop</div>
+                <div class="stat-box" id="score-box" style="margin-left: auto; color: #0ff; font-size: 1.4rem;">Score:
+                    <span id="score-display">0</span>
+                </div>
+            </div>
+            <div id="start-screen" class="screen active">
+                <h1>SPACE RPG REVENGE</h1>
+                <p>WASD to Move | Mouse to Aim & Shoot</p>
+                <button id="start-btn">START MISSION</button>
+            </div>
+            <div id="game-over-screen" class="screen hidden">
+                <div class="screen-content" style="text-align: center;">
+                    <h1>MISSION FAILED</h1>
+                    <p>Score: <span id="final-score">0</span></p>
+                    <p style="font-size: 1.2rem; color: #ff0;">Level Alcançado: <span id="final-level"
+                            style="color: #0ff; font-weight: bold;">1</span></p>
+                    <button id="restart-btn">Try Again</button>
+                    <button id="continue-btn" class="hidden" style="background-color: #f0f; margin-top: 10px;">CHANCES
+                        ADICIONAIS (<span id="continue-count">20</span>)</button>
+                </div>
+            </div>
+            <div id="shop-screen" class="screen hidden">
+                <h1>DOCKING STATION</h1>
+                <div class="shop-items">
+                    <div class="shop-item" data-upgrade="health">
+                        <h3>Hull Repair</h3>
+                        <p>Restore 50 HP</p>
+                        <button class="buy-btn" data-cost="100">100 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="speed">
+                        <h3>Engine Boost</h3>
+                        <p>+5% Speed</p>
+                        <button class="buy-btn" data-cost="200">200 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="damage">
+                        <h3>Weapon Upgrade</h3>
+                        <p>+10% Damage</p>
+                        <button class="buy-btn" data-cost="500">500 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="weapon">
+                        <h3>Multi Shot</h3>
+                        <p>Double/Triple Shot</p>
+                        <button class="buy-btn" data-cost="1000">1000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="homing">
+                        <h3>Homing Missiles</h3>
+                        <p>Auto-aim Projectiles</p>
+                        <button class="buy-btn" data-cost="2000">2000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="obliterator">
+                        <h3>Obliterator</h3>
+                        <p>Screen Nuke (Max 3)</p>
+                        <button class="buy-btn" data-cost="2500">2500 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="laser">
+                        <h3>Laser Cannon</h3>
+                        <p>Lvl 250+ (Continuous Beam)</p>
+                        <button class="buy-btn" data-cost="5000">5000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="quintuple">
+                        <h3>Quintuple Shot</h3>
+                        <p>Lvl 200+ (5-Way + Homing)</p>
+                        <button class="buy-btn" data-cost="3000">3000 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="redmoon">
+                        <h3>Endgame redmoon-gun</h3>
+                        <p>Lvl 400+ (720px Mega Blast)</p>
+                        <button class="buy-btn" data-cost="12000">12000 Cr</button>
+                    </div>
+                </div>
+                <button id="close-shop-btn">RESUME</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

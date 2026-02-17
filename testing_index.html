@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.R.P.G. - WEAPON TEST BED</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-layer">
+            <div id="hud">
+                <div class="stat-box">HP: <span id="hp-display">100</span></div>
+                <div class="stat-box">XP: <span id="xp-display">0</span></div>
+                <div class="stat-box">Level: <span id="level-display">1</span></div>
+                <div class="stat-box">Credits: <span id="credits-display">MAX</span></div>
+                <div class="stat-box">Weapon: Lv <span id="weapon-display">1</span> (Q)</div>
+                <div class="stat-box" style="color: #ff4d4d;">Nuke: <span id="ammo-display">0</span> (E)</div>
+                <div class="stat-box" style="border-color: #f0f; color: #f0f;">Press 'P' for FREE Shop</div>
+                <div class="stat-box" id="score-box" style="margin-left: auto; color: #0ff; font-size: 1.4rem;">Score:
+                    <span id="score-display">0</span>
+                </div>
+            </div>
+            <div id="start-screen" class="screen active">
+                <h1>WEAPON TEST BED</h1>
+                <p>TEST ALL WEAPONS AND UPGRADES HERE</p>
+                <p>Everything is FREE in the Shop (Press P)</p>
+                <button id="start-btn">INITIALIZE DUMMY</button>
+            </div>
+            <div id="game-over-screen" class="screen hidden">
+                <div class="screen-content" style="text-align: center;">
+                    <h1>TEST ENDED</h1>
+                    <p>Score: <span id="final-score">0</span></p>
+                    <button id="restart-btn">RE-INITIALIZE</button>
+                </div>
+            </div>
+            <div id="shop-screen" class="screen hidden">
+                <h1>DOCKING STATION (TEST MODE)</h1>
+                <div class="shop-items">
+                    <div class="shop-item" data-upgrade="health">
+                        <h3>Hull Repair</h3>
+                        <p>Restore 50 HP</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="speed">
+                        <h3>Engine Boost</h3>
+                        <p>+5% Speed</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="damage">
+                        <h3>Weapon Upgrade</h3>
+                        <p>+10% Damage</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="weapon">
+                        <h3>Multi Shot</h3>
+                        <p>Double/Triple Shot</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="homing">
+                        <h3>Homing Missiles</h3>
+                        <p>Auto-aim Projectiles</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="obliterator">
+                        <h3>Obliterator</h3>
+                        <p>Screen Nuke (Max 3)</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="laser">
+                        <h3>Laser Cannon</h3>
+                        <p>Continuous Beam</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="quintuple">
+                        <h3>Quintuple Shot</h3>
+                        <p>5-Way + Homing</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                    <div class="shop-item" data-upgrade="arc_shot">
+                        <h3>Arc Shot</h3>
+                        <p>Semi-Circle 2x Dmg</p>
+                        <button class="buy-btn" data-cost="0">0 Cr</button>
+                    </div>
+                </div>
+                <button id="close-shop-btn">RESUME</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/testing_main.js"></script>
+</body>
+
+</html>
