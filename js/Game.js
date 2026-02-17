@@ -5,6 +5,7 @@ import Boss from './entities/Boss.js';
 import Background from './Background.js';
 import Drop from './entities/Drop.js';
 import { checkCollision } from './utils.js';
+import AudioManager from './AudioManager.js';
 
 export default class Game {
     constructor(canvas) {
@@ -18,6 +19,7 @@ export default class Game {
 
         this.input = new InputHandler(this);
         this.background = new Background(this);
+        this.audio = new AudioManager();
 
         // Game State
         this.entities = [];
@@ -405,6 +407,7 @@ export default class Game {
                     this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
                     this.healSpawnCooldown = 120000; // 2 minutes
                     this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
+                    this.audio.playUpgrade();
                 }
                 this.updateUI();
             }
@@ -664,6 +667,7 @@ export default class Game {
                 continueBtn.classList.add('hidden');
             }
         }
+        this.audio.playGameOver();
     }
 
     triggerVictory() {
@@ -689,6 +693,7 @@ export default class Game {
             const restartBtn = document.getElementById('restart-btn');
             if (restartBtn) restartBtn.textContent = 'JOGAR NOVAMENTE';
         }
+        this.audio.playVictory();
     }
 
     spawnFloatingText(x, y, text, color) {
@@ -715,6 +720,7 @@ export default class Game {
             currentRadius: 10,
             life: 600, maxLife: 600, alpha: 1
         });
+        this.audio.playExplosion();
 
         if (this.player) {
             const px = this.player.x + this.player.width / 2;
@@ -741,6 +747,7 @@ export default class Game {
             color: 'rgba(0, 255, 255, ',
             life: 1000, maxLife: 1000, alpha: 1
         });
+        this.audio.playExplosion();
 
         // Damage enemies in range
         this.entities.forEach(entity => {
@@ -932,6 +939,7 @@ export default class Game {
                 break;
         }
         this.updateUI();
+        if (purchased) this.audio.playUpgrade();
     }
 
     fireObliterator() {
@@ -939,6 +947,7 @@ export default class Game {
 
         this.player.obliteratorAmmo--;
         this.updateUI();
+        this.audio.playObliterator();
 
         // Kill all enemies (except bosses)
         this.entities.forEach(entity => {

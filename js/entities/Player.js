@@ -122,6 +122,7 @@ export default class Player extends Entity {
                     projectile.velocity.y = Math.sin(angle) * projectile.speed;
 
                     this.game.projectiles.push(projectile);
+                    this.game.audio.playShoot();
                     this.shootTimer = 0;
                 } else {
                     this.shootTimer += deltaTime;
@@ -146,6 +147,7 @@ export default class Player extends Entity {
                         projectile.damage = this.damage;
                         projectile.isHoming = applyHoming;
                         this.game.projectiles.push(projectile);
+                        this.game.audio.playShoot();
                     } else if (activeLevel === 2) {
                         // Double Shot
                         const offset = 10;
@@ -159,6 +161,7 @@ export default class Player extends Entity {
                         p1.damage = this.damage; p2.damage = this.damage;
                         p1.isHoming = applyHoming; p2.isHoming = applyHoming;
                         this.game.projectiles.push(p1, p2);
+                        this.game.audio.playShoot();
                     } else if (activeLevel === 5) {
                         // Quintuple Shot - Divergent + 40% Homing per shot
                         const divergence = 0.2; // 0, +/- 0.2, +/- 0.4
@@ -174,6 +177,7 @@ export default class Player extends Entity {
                             projectile.isHoming = homingChance;
                             this.game.projectiles.push(projectile);
                         }
+                        this.game.audio.playShoot();
                     } else if (activeLevel === 6) {
                         // Arc Shot - Semi-circle + 2x Damage
                         const projectile = new Projectile(this.game, this.x + this.width / 2, this.y + this.height / 2, angle);
@@ -195,6 +199,7 @@ export default class Player extends Entity {
                         }
 
                         this.game.projectiles.push(projectile);
+                        this.game.audio.playShoot();
                     } else if (activeLevel === 3) {
                         // Triple Shot - Divergent (-40% spread)
                         const divergence = 0.156;
@@ -211,6 +216,7 @@ export default class Player extends Entity {
                         p1.damage = this.damage; p2.damage = this.damage; p3.damage = this.damage;
                         p1.isHoming = applyHoming; p2.isHoming = applyHoming; p3.isHoming = applyHoming;
                         this.game.projectiles.push(p1, p2, p3);
+                        this.game.audio.playShoot();
                     }
 
                     this.shootTimer = 0;
