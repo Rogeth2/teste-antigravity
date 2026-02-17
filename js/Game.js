@@ -407,8 +407,8 @@ export default class Game {
                     this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
                     this.healSpawnCooldown = 120000; // 2 minutes
                     this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
-                    this.audio.playUpgrade();
                 }
+                this.audio.playPickup(); // Added playPickup here
                 this.updateUI();
             }
         });
@@ -436,6 +436,7 @@ export default class Game {
                     const collisionMult = (entity.type === 'NORMAL') ? (this.globalCollisionDamageMult || 1) : 1;
                     const dmg = Math.floor(baseDamage * collisionMult);
                     this.player.takeDamage(dmg);
+                    this.audio.playDamage();
                 }
             }
 
@@ -730,6 +731,7 @@ export default class Game {
                 const dmg = 30;
                 this.player.hp -= dmg;
                 this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, `-${dmg} 💥`, '#ff6600');
+                this.audio.playDamage();
                 if (this.player.hp <= 0) this.triggerGameOver();
             }
         }

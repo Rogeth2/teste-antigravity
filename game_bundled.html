@@ -2076,6 +2076,38 @@ class AudioManager {
         osc.start();
         osc.stop(this.ctx.currentTime + 0.2);
     }
+
+    // Som de Dano (Low grunt/buzz)
+    playDamage() {
+        this.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    }
+
+    // Som de Coleta (High twinkle)
+    playPickup() {
+        this.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1000, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1500, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    }
 }
 
 // --- js/Game.js ---
@@ -2488,8 +2520,8 @@ class Game {
                     this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
                     this.healSpawnCooldown = 120000; // 2 minutes
                     this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
-                    this.audio.playUpgrade();
                 }
+                this.audio.playPickup(); // Added playPickup here
                 this.updateUI();
             }
         });
@@ -2517,6 +2549,7 @@ class Game {
                     const collisionMult = (entity.type === 'NORMAL') ? (this.globalCollisionDamageMult || 1) : 1;
                     const dmg = Math.floor(baseDamage * collisionMult);
                     this.player.takeDamage(dmg);
+                    this.audio.playDamage();
                 }
             }
 
@@ -2811,6 +2844,7 @@ class Game {
                 const dmg = 30;
                 this.player.hp -= dmg;
                 this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, `-${dmg} 💥`, '#ff6600');
+                this.audio.playDamage();
                 if (this.player.hp <= 0) this.triggerGameOver();
             }
         }
