@@ -202,10 +202,12 @@ export default class Boss extends Entity {
         if (this.attackTimer >= this.attackInterval) {
             this.attackTimer = 0;
             this.executePattern(this.attackPatterns[this.currentPatternIndex]);
+            this.game.audio.playEnemyShoot();
 
             // Devastador 20% HP Anti-Camping Shots
             if (this.bossLevel === 300 && (this.hp / this.maxHp) <= 0.2 && Math.random() < 0.1) {
                 this.fireDualHoming(this.x + this.width / 2, this.y + this.height / 2);
+                this.game.audio.playEnemyShoot();
             }
         }
 

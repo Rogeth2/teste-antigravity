@@ -8,6 +8,7 @@ $files = @(
     'js/entities/Enemy.js',
     'js/entities/Boss.js',
     'js/entities/Player.js',
+    'js/AudioManager.js',
     'js/Game.js',
     'js/main.js'
 )

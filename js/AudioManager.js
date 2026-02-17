@@ -32,6 +32,26 @@ export default class AudioManager {
         osc.stop(this.ctx.currentTime + 0.1);
     }
 
+    // Som de Tiro Inimigo (Lower pitch sweep)
+    playEnemyShoot() {
+        this.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
+
     // Som de Explosão (Filtered white noise)
     playExplosion() {
         this.resume();

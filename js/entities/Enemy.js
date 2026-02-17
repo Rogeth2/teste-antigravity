@@ -106,6 +106,7 @@ export default class Enemy extends Entity {
             projectile.color = '#ff9900';
             projectile.damage = 10;
             this.game.projectiles.push(projectile);
+            this.game.audio.playEnemyShoot();
         }
 
         if (this.y > this.game.height || (this.type !== 'NORMAL' && this.y > this.game.height + 100)) {
@@ -162,6 +163,7 @@ export default class Enemy extends Entity {
                     projectile.velocity.y = Math.sin(angle) * projectile.speed;
                     this.game.projectiles.push(projectile);
                 }
+                this.game.audio.playEnemyShoot();
             }
             this.shootTimer = 0;
         } else {
