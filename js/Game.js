@@ -310,6 +310,8 @@ export default class Game {
                 // Sub-boss level 5+ (1/100 chance)
                 if (this.level >= 5 && random < 0.01) {
                     type = 'SUBBOSS';
+                } else if (this.level >= 60 && random < 0.03) {
+                    type = 'BOMBER';
                 } else if (this.level >= 300 && random < 0.15) {
                     type = 'HYBRID';
                 } else if (this.level >= 300 && random < 0.30) {
@@ -318,10 +320,14 @@ export default class Game {
                     type = 'HYBRID';
                 } else if (score >= 39000 && random < 0.12) {
                     type = 'FOLLOWER';
+                } else if (this.level >= 30 && random < 0.04) {
+                    type = 'SHIELDED';
                 } else if (score >= 29000 && random < 0.05) {
                     type = 'FOLLOWER';
                 } else if (score >= 19000 && random < 0.10) {
                     type = 'SHOOTER';
+                } else if (this.level >= 15 && random < 0.03) {
+                    type = 'KAMIKAZE';
                 } else if (score >= 9000 && random < 0.05) {
                     type = 'SHOOTER';
                 }
@@ -381,35 +387,52 @@ export default class Game {
         this.drops.forEach(drop => {
             drop.update(deltaTime);
             if (this.player && checkCollision(this.player, drop)) {
-                drop.markedForDeletion = true;
-                if (drop.type === 'OBLITERATOR') {
-                    if (this.player.obliteratorAmmo < 3) {
-                        this.player.obliteratorAmmo++;
+                if (drop.type === 'MINE') {
+                    // Mine explodes on contact!
+                    drop.markedForDeletion = true;
+                    this.explosions.push({
+                        x: drop.x + drop.width / 2,
+                        y: drop.y + drop.height / 2,
+                        radius: drop.explodeRadius,
+                        currentRadius: 5,
+                        color: 'rgba(255, 136, 0, ',
+                        life: 400, maxLife: 400, alpha: 1
+                    });
+                    this.player.takeDamage(drop.explodeDamage);
+                    this.spawnFloatingText(this.player.x, this.player.y, `-${drop.explodeDamage} 💣`, '#ff8800');
+                    this.audio.playExplosion();
+                    this.audio.playDamage();
+                } else {
+                    drop.markedForDeletion = true;
+                    if (drop.type === 'OBLITERATOR') {
+                        if (this.player.obliteratorAmmo < 3) {
+                            this.player.obliteratorAmmo++;
+                        }
+                    } else if (drop.type === 'ARMOR_1') {
+                        if (!this.hasArmor1) {
+                            this.hasArmor1 = true;
+                            this.player.maxHpLevel = 1;
+                            this.player.maxHp = 150;
+                            this.player.hp = this.player.maxHp;
+                        }
+                    } else if (drop.type === 'ARMOR_2') {
+                        if (!this.hasArmor2) {
+                            this.hasArmor2 = true;
+                            this.player.maxHpLevel = 2;
+                            this.player.maxHp = 200;
+                            this.player.hp = this.player.maxHp;
+                        }
+                    } else if (drop.type === 'SHIELD') {
+                        this.player.shieldTimer = 15000;
+                        this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, 'ESCUDO ATIVADO (15s)!', '#0ff');
+                    } else if (drop.type === 'REPAIR') {
+                        this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
+                        this.healSpawnCooldown = 120000;
+                        this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
                     }
-                } else if (drop.type === 'ARMOR_1') {
-                    if (!this.hasArmor1) {
-                        this.hasArmor1 = true;
-                        this.player.maxHpLevel = 1;
-                        this.player.maxHp = 150; // +50%
-                        this.player.hp = this.player.maxHp;
-                    }
-                } else if (drop.type === 'ARMOR_2') {
-                    if (!this.hasArmor2) {
-                        this.hasArmor2 = true;
-                        this.player.maxHpLevel = 2;
-                        this.player.maxHp = 200; // ~+33% of 150
-                        this.player.hp = this.player.maxHp;
-                    }
-                } else if (drop.type === 'SHIELD') {
-                    this.player.shieldTimer = 15000;
-                    this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, 'ESCUDO ATIVADO (15s)!', '#0ff');
-                } else if (drop.type === 'REPAIR') {
-                    this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
-                    this.healSpawnCooldown = 120000; // 2 minutes
-                    this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
+                    this.audio.playPickup();
+                    this.updateUI();
                 }
-                this.audio.playPickup(); // Added playPickup here
-                this.updateUI();
             }
         });
         this.drops = this.drops.filter(d => !d.markedForDeletion);

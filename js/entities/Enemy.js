@@ -45,6 +45,39 @@ export default class Enemy extends Entity {
             this.creditsValue = 200;
             this.shootTimer = 0;
             this.shootInterval = 1200;
+        } else if (this.type === 'KAMIKAZE') {
+            this.color = '#ff3300';
+            this.speed = 4;
+            this.hp = 30;
+            this.scoreValue = 250;
+            this.creditsValue = 25;
+            this.explodeRadius = 200;
+            this.explodeDamage = 40;
+            this.isPrepping = false;
+            this.prepTimer = 0;
+            this.prepDuration = 1000; // 1s warning before explode
+            this.pulseTimer = 0;
+        } else if (this.type === 'SHIELDED') {
+            this.color = '#4488ff';
+            this.hp = 50;
+            this.scoreValue = 400;
+            this.creditsValue = 40;
+            this.shieldHits = 3;
+            this.shieldActive = true;
+        } else if (this.type === 'BOMBER') {
+            this.width = 60;
+            this.height = 30;
+            this.color = '#ff8800';
+            this.speed = 3;
+            this.hp = 80;
+            this.scoreValue = 500;
+            this.creditsValue = 50;
+            this.mineTimer = 0;
+            this.mineInterval = 2000;
+            // Start at a random side, fly horizontally
+            this.x = Math.random() < 0.5 ? -this.width : this.game.width;
+            this.y = 30 + Math.random() * 80; // Top area
+            this.direction = this.x < 0 ? 1 : -1;
         }
 
         this.canRandomShot = (this.game.level >= 5 && Math.random() < 0.02);
@@ -96,6 +129,56 @@ export default class Enemy extends Entity {
                 this.rotation = angle;
             }
             this.handleShooting(deltaTime, fireRateMult, projectileSpeedMult);
+        } else if (this.type === 'KAMIKAZE') {
+            // Chase player at high speed
+            if (this.game.player) {
+                const dx = this.game.player.x - this.x;
+                const dy = this.game.player.y - this.y;
+                const dist = Math.hypot(dx, dy);
+                const angle = Math.atan2(dy, dx);
+                this.rotation = angle;
+
+                if (this.isPrepping) {
+                    // Counting down to explosion
+                    this.prepTimer += deltaTime;
+                    this.pulseTimer += deltaTime;
+                    if (this.prepTimer >= this.prepDuration) {
+                        // EXPLODE!
+                        this.kamikazeExplode();
+                        return;
+                    }
+                } else if (dist < 100) {
+                    // Close enough - start prepping
+                    this.isPrepping = true;
+                    this.prepTimer = 0;
+                } else {
+                    // Chase
+                    this.x += Math.cos(angle) * this.speed;
+                    this.y += Math.sin(angle) * this.speed;
+                }
+            }
+        } else if (this.type === 'SHIELDED') {
+            // Moves like NORMAL but with shield
+            this.y += this.speedY;
+            this.x += Math.sin(this.y * 0.05) * 1.5;
+            this.rotation = Math.PI / 2;
+        } else if (this.type === 'BOMBER') {
+            // Fly horizontally across the top
+            this.x += this.speed * this.direction;
+            this.rotation = this.direction > 0 ? 0 : Math.PI;
+
+            // Drop mines
+            this.mineTimer += deltaTime;
+            if (this.mineTimer >= this.mineInterval) {
+                this.mineTimer = 0;
+                this.dropMine();
+            }
+
+            // Exit off-screen
+            if ((this.direction > 0 && this.x > this.game.width + this.width) ||
+                (this.direction < 0 && this.x < -this.width * 2)) {
+                this.markedForDeletion = true;
+            }
         }
 
         if (this.canRandomShot && !this.hasRandomShotFired && this.y > 50) {
@@ -109,7 +192,7 @@ export default class Enemy extends Entity {
             this.game.audio.playEnemyShoot();
         }
 
-        if (this.y > this.game.height || (this.type !== 'NORMAL' && this.y > this.game.height + 100)) {
+        if (this.type !== 'BOMBER' && (this.y > this.game.height || (this.type !== 'NORMAL' && this.type !== 'SHIELDED' && this.y > this.game.height + 100))) {
             this.markedForDeletion = true;
         }
     }
@@ -121,15 +204,85 @@ export default class Enemy extends Entity {
         const drawRotation = (this.rotation !== undefined) ? this.rotation : Math.PI / 2;
         ctx.rotate(drawRotation + Math.PI / 2);
 
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.moveTo(0, -this.height / 2);
-        ctx.lineTo(this.width / 2, this.height / 2);
-        ctx.lineTo(-this.width / 2, this.height / 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = 'white';
-        ctx.stroke();
+        if (this.type === 'KAMIKAZE') {
+            // Pulsing red triangle
+            const pulse = this.isPrepping ? (Math.sin(this.pulseTimer * 0.02) > 0 ? '#fff' : '#ff0000') : this.color;
+            ctx.fillStyle = pulse;
+            ctx.shadowColor = '#ff3300';
+            ctx.shadowBlur = this.isPrepping ? 25 : 10;
+            ctx.beginPath();
+            ctx.moveTo(0, -this.height / 2);
+            ctx.lineTo(this.width / 2, this.height / 2);
+            ctx.lineTo(-this.width / 2, this.height / 2);
+            ctx.closePath();
+            ctx.fill();
+            // Inner warning circle
+            ctx.fillStyle = '#ffcc00';
+            ctx.beginPath();
+            ctx.arc(0, 5, 6, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (this.type === 'SHIELDED') {
+            // Blue triangle
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.moveTo(0, -this.height / 2);
+            ctx.lineTo(this.width / 2, this.height / 2);
+            ctx.lineTo(-this.width / 2, this.height / 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+
+            // Shield arc (front)
+            if (this.shieldActive) {
+                ctx.strokeStyle = '#00ccff';
+                ctx.lineWidth = 4;
+                ctx.shadowColor = '#00ccff';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(0, -this.height / 2, this.width * 0.6, -Math.PI * 0.6, Math.PI * 0.6);
+                ctx.stroke();
+                // Shield hit indicators
+                for (let i = 0; i < this.shieldHits; i++) {
+                    ctx.fillStyle = '#00ffff';
+                    ctx.beginPath();
+                    ctx.arc(-8 + i * 8, -this.height / 2 - 8, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        } else if (this.type === 'BOMBER') {
+            // Wide rectangle (bomber shape)
+            ctx.rotate(-drawRotation - Math.PI / 2); // Undo rotation for bomber
+            ctx.fillStyle = this.color;
+            ctx.shadowColor = '#ff8800';
+            ctx.shadowBlur = 10;
+            // Body
+            ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+            // Wings
+            ctx.fillStyle = '#cc6600';
+            ctx.fillRect(-this.width / 2 - 5, -3, 10, 6);
+            ctx.fillRect(this.width / 2 - 5, -3, 10, 6);
+            // Cockpit
+            ctx.fillStyle = '#ffcc00';
+            ctx.beginPath();
+            ctx.arc(this.direction > 0 ? this.width / 3 : -this.width / 3, 0, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        } else {
+            // Default triangle (NORMAL, FOLLOWER, SHOOTER, HYBRID, SUBBOSS)
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.moveTo(0, -this.height / 2);
+            ctx.lineTo(this.width / 2, this.height / 2);
+            ctx.lineTo(-this.width / 2, this.height / 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+        }
+
         ctx.restore();
     }
 
@@ -172,8 +325,24 @@ export default class Enemy extends Entity {
     }
 
     takeDamage(amount) {
+        // SHIELDED: absorb hits with shield first
+        if (this.type === 'SHIELDED' && this.shieldActive) {
+            this.shieldHits--;
+            this.game.spawnFloatingText(this.x + this.width / 2, this.y - 10, 'BLOCKED!', '#00ccff');
+            if (this.shieldHits <= 0) {
+                this.shieldActive = false;
+                this.game.spawnFloatingText(this.x + this.width / 2, this.y - 20, 'SHIELD DOWN!', '#ff4444');
+            }
+            return; // No HP damage while shield is up
+        }
+
         this.hp -= amount;
         if (this.hp <= 0) {
+            // KAMIKAZE explodes on death too
+            if (this.type === 'KAMIKAZE' && !this.hasExploded) {
+                this.kamikazeExplode();
+                return;
+            }
             this.markedForDeletion = true;
             this.game.score += this.scoreValue;
             this.game.credits += this.creditsValue;
@@ -181,5 +350,78 @@ export default class Enemy extends Entity {
                 this.game.onEnemyDeath(this);
             }
         }
+    }
+
+    kamikazeExplode() {
+        this.hasExploded = true;
+        this.markedForDeletion = true;
+        this.game.score += this.scoreValue;
+        this.game.credits += this.creditsValue;
+
+        const ex = this.x + this.width / 2;
+        const ey = this.y + this.height / 2;
+
+        // Visual explosion
+        this.game.explosions.push({
+            x: ex, y: ey, radius: this.explodeRadius,
+            currentRadius: 10,
+            color: 'rgba(255, 50, 0, ',
+            life: 500, maxLife: 500, alpha: 1
+        });
+        this.game.audio.playExplosion();
+
+        // Damage player if in range
+        if (this.game.player) {
+            const px = this.game.player.x + this.game.player.width / 2;
+            const py = this.game.player.y + this.game.player.height / 2;
+            const dist = Math.hypot(px - ex, py - ey);
+            if (dist <= this.explodeRadius) {
+                this.game.player.takeDamage(this.explodeDamage);
+                this.game.spawnFloatingText(this.game.player.x, this.game.player.y, `-${this.explodeDamage} 💣`, '#ff3300');
+                this.game.audio.playDamage();
+            }
+        }
+
+        if (this.game.onEnemyDeath) {
+            this.game.onEnemyDeath(this);
+        }
+    }
+
+    dropMine() {
+        const mine = {
+            x: this.x + this.width / 2 - 10,
+            y: this.y + this.height,
+            width: 20,
+            height: 20,
+            type: 'MINE',
+            life: 10000, // 10 seconds
+            markedForDeletion: false,
+            pulseTimer: 0,
+            explodeRadius: 80,
+            explodeDamage: 25,
+            update(deltaTime) {
+                this.life -= deltaTime;
+                this.pulseTimer += deltaTime;
+                if (this.life <= 0) this.markedForDeletion = true;
+            },
+            draw(ctx) {
+                ctx.save();
+                const pulse = Math.sin(this.pulseTimer * 0.005) * 0.3 + 0.7;
+                ctx.fillStyle = `rgba(255, 136, 0, ${pulse})`;
+                ctx.shadowColor = '#ff4400';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 10, 0, Math.PI * 2);
+                ctx.fill();
+                // Inner dot
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        };
+        this.game.drops.push(mine);
+        this.game.audio.playEnemyShoot();
     }
 }
