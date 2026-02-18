@@ -1,51 +1,45 @@
-$baseDir = "c:\Users\Rogerio\Desktop\teste antigravity"
+const fs = require('fs');
+const path = require('path');
 
-# Source files in order
-$sourceFiles = @(
-    "js\utils.js",
-    "js\InputHandler.js",
-    "js\Background.js",
-    "js\entities\Entity.js",
-    "js\entities\Projectile.js",
-    "js\entities\Drop.js",
-    "js\entities\Enemy.js",
-    "js\entities\Player.js",
-    "js\entities\Boss.js",
-    "js\AudioManager.js",
-    "js\Game.js"
-)
+// Read all source files
+const files = [
+    { label: 'js/utils.js', path: 'js/utils.js' },
+    { label: 'js/InputHandler.js', path: 'js/InputHandler.js' },
+    { label: 'js/Background.js', path: 'js/Background.js' },
+    { label: 'js/entities/Entity.js', path: 'js/entities/Entity.js' },
+    { label: 'js/entities/Projectile.js', path: 'js/entities/Projectile.js' },
+    { label: 'js/entities/Drop.js', path: 'js/entities/Drop.js' },
+    { label: 'js/entities/Enemy.js', path: 'js/entities/Enemy.js' },
+    { label: 'js/entities/Player.js', path: 'js/entities/Player.js' },
+    { label: 'js/entities/Boss.js', path: 'js/entities/Boss.js' },
+    { label: 'js/AudioManager.js', path: 'js/AudioManager.js' },
+    { label: 'js/Game.js', path: 'js/Game.js' },
+];
 
-# Read the existing bundled HTML
-$bundled = Get-Content -Path "$baseDir\game_bundled.html" -Raw -Encoding UTF8
+const baseDir = __dirname;
 
-# Find the <script> and </script> boundaries
-$scriptStartIdx = $bundled.IndexOf('<script>')
-$scriptEndIdx = $bundled.IndexOf('</script>')
+// Read template HTML (everything before <script> and after </script>)
+const bundled = fs.readFileSync(path.join(baseDir, 'game_bundled.html'), 'utf8');
+const scriptStart = bundled.indexOf('<script>');
+const scriptEnd = bundled.indexOf('</script>');
 
-$htmlBefore = $bundled.Substring(0, $scriptStartIdx + '<script>'.Length)
-$htmlAfter = $bundled.Substring($scriptEndIdx)
+const htmlBefore = bundled.substring(0, scriptStart + '<script>'.length);
+const htmlAfter = bundled.substring(scriptEnd);
 
-# Build JS content
-$jsContent = "`n"
+// Build JS content
+let jsContent = '\n';
+files.forEach(f => {
+    let code = fs.readFileSync(path.join(baseDir, f.path), 'utf8');
+    // Remove import/export statements
+    code = code.replace(/^import\s+.*;\s*$/gm, '');
+    code = code.replace(/^export\s+default\s+/gm, '');
+    code = code.replace(/^export\s+/gm, '');
+    jsContent += `\n// --- ${f.label} ---\n`;
+    jsContent += code;
+});
 
-foreach ($file in $sourceFiles) {
-    $filePath = Join-Path $baseDir $file
-    $code = Get-Content -Path $filePath -Raw -Encoding UTF8
-    
-    # Remove import statements
-    $code = $code -replace '(?m)^import\s+.*?;\s*$', ''
-    # Remove export default
-    $code = $code -replace '(?m)^export\s+default\s+', ''
-    # Remove export
-    $code = $code -replace '(?m)^export\s+', ''
-    
-    $jsContent += "`n// --- $file ---`n"
-    $jsContent += $code
-}
-
-# Add initialization code
-$initCode = @'
-
+// Add initialization code
+jsContent += `
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('gameCanvas');
@@ -59,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('restart-btn').addEventListener('click', () => {
         document.getElementById('game-over-screen').classList.add('hidden');
+        // Reset title for next death
         const title = document.querySelector('#game-over-screen h1');
         if (title) {
             title.textContent = 'MISSION FAILED';
@@ -71,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (continueBtn) {
         continueBtn.addEventListener('click', () => {
             document.getElementById('game-over-screen').classList.add('hidden');
+            // Reset title for next death
             const title = document.querySelector('#game-over-screen h1');
             if (title) {
                 title.textContent = 'MISSION FAILED';
@@ -104,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Global Button Polish (Scale and Color Feedback)
     document.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('mousedown', () => {
             const colors = ['#f0f', '#0ff', '#ff0', '#0f0', '#f00', '#fff'];
@@ -121,19 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Initial resize
     game.resize(window.innerWidth, window.innerHeight);
     window.addEventListener('resize', () => {
         game.resize(window.innerWidth, window.innerHeight);
     });
 });
-'@
+`;
 
-$jsContent += $initCode
-
-$output = $htmlBefore + $jsContent + "`n" + $htmlAfter
-
-$utf8NoBom = New-Object System.Text.UTF8Encoding $false
-[System.IO.File]::WriteAllText("$baseDir\game_bundled.html", $output, $utf8NoBom)
-
-$lineCount = ($output -split "`n").Count
-Write-Host "Bundle created successfully! Lines: $lineCount"
+const output = htmlBefore + jsContent + '\n' + htmlAfter;
+fs.writeFileSync(path.join(baseDir, 'game_bundled.html'), output, 'utf8');
+console.log('Bundle created successfully! Lines:', output.split('\n').length);

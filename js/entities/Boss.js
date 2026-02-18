@@ -84,6 +84,35 @@ export default class Boss extends Entity {
             this.projectileSpeed = 5;
             this.bossName = '👑 PERSEGUIDOR REI 👑';
             this.nameColor = '#ffff00';
+        } else if (bossLevel === 200) {
+            // Boss — PERSEGUIDORA RAINHA
+            this.width = 130;
+            this.height = 130;
+            this.maxHp = 150000;
+            this.hp = this.maxHp;
+            this.scoreValue = 12000;
+            this.creditsValue = 1200;
+            this.color = '#ff00cc';
+            this.speed = 2.6; // 30% faster than 2.0
+            this.attackPatterns = ['QUEEN_LASER', 'QUEEN_TRIPLE_HOMING'];
+            this.projectileCount = 3;
+            this.projectileSpeed = 5;
+            this.bossName = '👑 PERSEGUIDORA RAINHA 👑';
+            this.nameColor = '#ff44ff';
+
+            // Dash mechanics (activates at 30% HP)
+            this.dashTimer = 0;
+            this.dashInterval = 3000; // Every 3s
+            this.dashDuration = 1500; // 1.5s
+            this.isDashing = false;
+            this.dashElapsed = 0;
+            this.dashTrail = [];
+
+            // Laser state
+            this.isLasering = false;
+            this.laserTimer = 0;
+            this.laserDuration = 500; // 0.5s
+            this.laserAngle = 0;
         }
 
         // Positioning
@@ -123,13 +152,88 @@ export default class Boss extends Entity {
         const centerX = (this.game.width - this.width) / 2 + this.twinOffset;
 
         if (this.bossLevel === 7) {
-            // Level 7: Follower movement (already reaches edges by following player, but clamping will handle it)
+            // Level 7: Follower movement
             if (this.game.player) {
                 const dx = this.game.player.x + this.game.player.width / 2 - (this.x + this.width / 2);
                 const dy = this.game.player.y + this.game.player.height / 2 - (this.y + this.height / 2);
                 const angle = Math.atan2(dy, dx);
                 this.x += Math.cos(angle) * this.speed;
                 this.y += Math.sin(angle) * this.speed;
+            }
+        } else if (this.bossLevel === 200) {
+            // Perseguidora Rainha: Follower with Dash
+            const hpRatio = this.hp / this.maxHp;
+            let currentSpeed = this.speed;
+
+            // Dash logic at 30% HP
+            if (hpRatio <= 0.3) {
+                this.dashTimer += deltaTime;
+                if (this.isDashing) {
+                    this.dashElapsed += deltaTime;
+                    currentSpeed = this.speed * 2; // Double speed
+                    // Trail effect
+                    this.dashTrail.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, alpha: 0.5 });
+                    if (this.dashTrail.length > 15) this.dashTrail.shift();
+                    if (this.dashElapsed >= this.dashDuration) {
+                        this.isDashing = false;
+                        this.dashElapsed = 0;
+                        this.dashTimer = 0;
+                    }
+                } else {
+                    // Decay trail
+                    this.dashTrail.forEach(t => t.alpha -= 0.02);
+                    this.dashTrail = this.dashTrail.filter(t => t.alpha > 0);
+                    if (this.dashTimer >= this.dashInterval) {
+                        this.isDashing = true;
+                        this.dashElapsed = 0;
+                    }
+                }
+            }
+
+            // Follower movement
+            if (this.game.player) {
+                const dx = this.game.player.x + this.game.player.width / 2 - (this.x + this.width / 2);
+                const dy = this.game.player.y + this.game.player.height / 2 - (this.y + this.height / 2);
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * currentSpeed;
+                this.y += Math.sin(angle) * currentSpeed;
+            }
+
+            // Laser update
+            if (this.isLasering) {
+                this.laserTimer += deltaTime;
+                if (this.game.player) {
+                    this.laserAngle = Math.atan2(
+                        this.game.player.y + this.game.player.height / 2 - (this.y + this.height / 2),
+                        this.game.player.x + this.game.player.width / 2 - (this.x + this.width / 2)
+                    );
+                }
+                // Damage player if laser touches (check every frame)
+                if (this.game.player) {
+                    const lx = this.x + this.width / 2;
+                    const ly = this.y + this.height / 2;
+                    const px = this.game.player.x + this.game.player.width / 2;
+                    const py = this.game.player.y + this.game.player.height / 2;
+                    // Point-to-line distance
+                    const laserLen = 1040; // +30% range
+                    const ex = lx + Math.cos(this.laserAngle) * laserLen;
+                    const ey = ly + Math.sin(this.laserAngle) * laserLen;
+                    const dist = Math.abs((ey - ly) * px - (ex - lx) * py + ex * ly - ey * lx) /
+                        Math.hypot(ey - ly, ex - lx);
+                    if (dist < 25 && this.laserTimer > 200) { // Small grace period
+                        const dx2 = px - lx;
+                        const dy2 = py - ly;
+                        const dot = dx2 * Math.cos(this.laserAngle) + dy2 * Math.sin(this.laserAngle);
+                        if (dot > 0 && dot < laserLen) {
+                            this.game.player.takeDamage(5);
+                            this.game.spawnFloatingText(px, py, '-5 LASER', '#ff00ff');
+                        }
+                    }
+                }
+                if (this.laserTimer >= this.laserDuration) {
+                    this.isLasering = false;
+                    this.laserTimer = 0;
+                }
             }
         } else if (this.bossLevel === 300) {
             // Boss 3 (Devastador): Hybrid Horizontal + Semi-Circular (reaching center)
@@ -238,6 +342,9 @@ export default class Boss extends Entity {
             case 'PULSE': this.firePulse(cx, cy); break;
             // Level 7 pattern
             case 'DOUBLE_HOMING': this.fireDoubleHoming(cx, cy); break;
+            // Boss 200 patterns
+            case 'QUEEN_LASER': this.fireQueenLaser(cx, cy); break;
+            case 'QUEEN_TRIPLE_HOMING': this.fireQueenTripleHoming(cx, cy); break;
         }
     }
 
@@ -408,6 +515,39 @@ export default class Boss extends Entity {
         this.attackInterval = 2000 + Math.random() * 2000;
     }
 
+    // === Boss 200 Patterns (Perseguidora Rainha) ===
+
+    fireQueenLaser(cx, cy) {
+        // Activate laser beam for 1 second
+        this.isLasering = true;
+        this.laserTimer = 0;
+        if (this.game.player) {
+            this.laserAngle = Math.atan2(
+                this.game.player.y + this.game.player.height / 2 - cy,
+                this.game.player.x + this.game.player.width / 2 - cx
+            );
+        }
+        this.attackInterval = 8000 + Math.random() * 7000; // 8-15s
+    }
+
+    fireQueenTripleHoming(cx, cy) {
+        if (!this.game.player) return;
+        const count = 3;
+        const spread = 0.6;
+        const angleToPlayer = Math.atan2(this.game.player.y - cy, this.game.player.x - cx);
+        for (let i = 0; i < count; i++) {
+            const angle = angleToPlayer - spread / 2 + (spread / (count - 1)) * i;
+            const p = this.spawnProjectile(cx, cy, angle, this.projectileSpeed * 0.8, '#ff44ff');
+            if (p) {
+                p.isHoming = true;
+                p.homingTimer = 5000; // Follow for 5 seconds
+                p.color = '#ff66cc';
+            }
+        }
+        // Variable interval 3-5s
+        this.attackInterval = 3000 + Math.random() * 2000;
+    }
+
     fireDualHoming(cx, cy) {
         if (!this.game.player) return;
         const count = 2;
@@ -457,7 +597,7 @@ export default class Boss extends Entity {
         projectile.isEnemy = true;
         projectile.isBossBeam = true;
         projectile.color = color;
-        projectile.damage = 15;
+        projectile.damage = (this.bossLevel === 200) ? 15 : 45; // 3x for all bosses except Rainha
         // Boss 50 Damage Buff at 20% HP
         const hpRatio = this.hp / this.maxHp;
         if (this.bossLevel === 50 && hpRatio <= 0.2) {
@@ -508,6 +648,8 @@ export default class Boss extends Entity {
             this.drawBoss1(ctx, cx, cy);
         } else if (this.bossLevel === 100) {
             this.drawBoss2(ctx, cx, cy);
+        } else if (this.bossLevel === 200) {
+            this.drawBoss200(ctx, cx, cy);
         } else if (this.bossLevel === 300) {
             this.drawBoss3(ctx, cx, cy);
         } else if (this.bossLevel === 490) {
@@ -655,6 +797,114 @@ export default class Boss extends Entity {
         ctx.closePath();
         ctx.stroke();
         ctx.restore();
+    }
+
+    drawBoss200(ctx, cx, cy) {
+        // Perseguidora Rainha - Hexagonal magenta with crown
+        const s = this.width / 2;
+
+        // Draw dash trail
+        if (this.dashTrail && this.dashTrail.length > 0) {
+            this.dashTrail.forEach(t => {
+                ctx.save();
+                ctx.globalAlpha = t.alpha * 0.3;
+                ctx.fillStyle = '#ff00cc';
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI * 2 / 6) * i - Math.PI / 6;
+                    const x = Math.cos(angle) * s * 0.7;
+                    const y = Math.sin(angle) * s * 0.7;
+                    i === 0 ? ctx.moveTo(t.x - cx + x, t.y - cy + y) : ctx.lineTo(t.x - cx + x, t.y - cy + y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Transparency when dashing
+        if (this.isDashing) {
+            ctx.globalAlpha = 0.5;
+        }
+
+        ctx.shadowColor = '#ff00cc';
+        ctx.shadowBlur = 30;
+
+        // Outer hexagon body
+        ctx.fillStyle = '#cc0099';
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 2 / 6) * i - Math.PI / 6;
+            const x = Math.cos(angle) * s * 0.9;
+            const y = Math.sin(angle) * s * 0.9;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ff66cc';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Inner diamond
+        ctx.fillStyle = '#ff44ff';
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 0.4);
+        ctx.lineTo(s * 0.3, 0);
+        ctx.lineTo(0, s * 0.4);
+        ctx.lineTo(-s * 0.3, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Crown on top
+        ctx.fillStyle = '#ffdd00';
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.35, -s * 0.5);
+        ctx.lineTo(-s * 0.2, -s * 0.8);
+        ctx.lineTo(0, -s * 0.6);
+        ctx.lineTo(s * 0.2, -s * 0.8);
+        ctx.lineTo(s * 0.35, -s * 0.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ffaa00';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Eye
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.05, s * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ff0066';
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.05, s * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        // Draw laser beam
+        if (this.isLasering) {
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.strokeStyle = '#ff00ff';
+            ctx.lineWidth = 8;
+            ctx.shadowColor = '#ff00ff';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(this.laserAngle) * 1040, cy + Math.sin(this.laserAngle) * 1040);
+            ctx.stroke();
+            // Inner bright line
+            ctx.strokeStyle = '#ffaaff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(this.laserAngle) * 1040, cy + Math.sin(this.laserAngle) * 1040);
+            ctx.stroke();
+            ctx.restore();
+        }
     }
 
     drawBoss3(ctx, cx, cy) {

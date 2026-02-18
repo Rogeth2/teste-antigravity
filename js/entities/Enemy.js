@@ -76,7 +76,15 @@ export default class Enemy extends Entity {
             this.mineInterval = 2000;
             // Start at a random side, fly horizontally
             this.x = Math.random() < 0.5 ? -this.width : this.game.width;
-            this.y = 30 + Math.random() * 80; // Top area
+            // Multi-zone: top, center, or bottom
+            const zone = Math.random();
+            if (zone < 0.33) {
+                this.y = 30 + Math.random() * 80; // Top
+            } else if (zone < 0.66) {
+                this.y = this.game.height * 0.4 + Math.random() * (this.game.height * 0.2); // Center
+            } else {
+                this.y = this.game.height * 0.75 + Math.random() * (this.game.height * 0.15); // Bottom
+            }
             this.direction = this.x < 0 ? 1 : -1;
         }
 

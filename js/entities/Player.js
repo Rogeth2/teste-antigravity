@@ -175,6 +175,13 @@ export default class Player extends Entity {
                             projectile.velocity.y = Math.sin(shotAngle) * projectile.speed;
                             projectile.damage = this.damage;
                             projectile.isHoming = homingChance;
+
+                            // 1/10 of homing shots are critical (yellow explosion)
+                            if (homingChance && Math.random() < 0.1) {
+                                projectile.isCriticalQuintuple = true;
+                                projectile.color = '#ffdd00'; // Yellow glow
+                            }
+
                             this.game.projectiles.push(projectile);
                         }
                         this.game.audio.playShoot();
@@ -304,7 +311,7 @@ export default class Player extends Entity {
             ctx.lineTo(10, -10);
             ctx.stroke();
 
-        } else if (this.maxHpLevel >= 2) {
+        } else if (this.maxHpLevel === 2) {
             // "Parruda"
             ctx.fillStyle = '#aa0';
             ctx.fillRect(-20, -10, 40, 20);
@@ -317,6 +324,61 @@ export default class Player extends Entity {
             ctx.fillStyle = '#555';
             ctx.fillRect(-25, -25, 15, 50);
             ctx.strokeRect(-25, -25, 15, 50);
+        } else if (this.maxHpLevel >= 3) {
+            // "Suprema" - Sleek silver/blue advanced fighter
+            ctx.fillStyle = '#4488cc';
+            ctx.shadowColor = '#00ccff';
+            ctx.shadowBlur = 15;
+
+            // Main body (elongated diamond)
+            ctx.beginPath();
+            ctx.moveTo(35, 0);
+            ctx.lineTo(5, 12);
+            ctx.lineTo(-25, 8);
+            ctx.lineTo(-30, 0);
+            ctx.lineTo(-25, -8);
+            ctx.lineTo(5, -12);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Top wing
+            ctx.fillStyle = '#336699';
+            ctx.beginPath();
+            ctx.moveTo(5, -12);
+            ctx.lineTo(-10, -30);
+            ctx.lineTo(-25, -28);
+            ctx.lineTo(-20, -8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Bottom wing
+            ctx.beginPath();
+            ctx.moveTo(5, 12);
+            ctx.lineTo(-10, 30);
+            ctx.lineTo(-25, 28);
+            ctx.lineTo(-20, 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Cockpit
+            ctx.fillStyle = '#aaddff';
+            ctx.beginPath();
+            ctx.arc(10, 0, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Thruster glow
+            ctx.fillStyle = `rgba(0, 200, 255, ${0.5 + Math.random() * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(-30, -4);
+            ctx.lineTo(-40 - Math.random() * 8, 0);
+            ctx.lineTo(-30, 4);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
         }
 
 

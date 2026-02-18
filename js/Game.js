@@ -43,6 +43,7 @@ export default class Game {
         this.bossDefeated7 = false;
         this.bossDefeated50 = false;
         this.bossDefeated100 = false;
+        this.bossDefeated200 = false;
         this.bossDefeated300 = false;
         this.bossDefeated490 = false;
 
@@ -96,10 +97,12 @@ export default class Game {
         this.bossDefeated7 = false;
         this.bossDefeated50 = false;
         this.bossDefeated100 = false;
+        this.bossDefeated200 = false;
         this.bossDefeated300 = false;
         this.bossDefeated490 = false;
         this.hasArmor1 = false;
         this.hasArmor2 = false;
+        this.hasArmor3 = false;
         this.healSpawnCooldown = 0;
         this.upgradeLog = [];
 
@@ -117,7 +120,7 @@ export default class Game {
     }
 
     continueAfterDeath() {
-        if (this.continuesRemaining <= 0 || this.level < 20) return;
+        if (this.continuesRemaining <= 0 || this.level < 7) return;
 
         this.continuesRemaining--;
         this.gameOver = false;
@@ -127,18 +130,22 @@ export default class Game {
         let targetScore = 0;
         let targetLevel = 1;
 
-        if (this.level >= 400) {
-            targetScore = 399000;
-            targetLevel = 400;
-        } else if (this.level >= 290) {
-            targetScore = 289000;
-            targetLevel = 290;
-        } else if (this.level >= 90) {
-            targetScore = 89000;
-            targetLevel = 90;
-        } else if (this.level >= 20) {
-            targetScore = 19000;
-            targetLevel = 20;
+        const checkpoints = [
+            { level: 400, score: 399000 },
+            { level: 290, score: 289000 },
+            { level: 200, score: 199000 },
+            { level: 150, score: 149000 },
+            { level: 90, score: 89000 },
+            { level: 49, score: 48000 },
+            { level: 20, score: 19000 },
+            { level: 7, score: 6000 }
+        ];
+        for (const cp of checkpoints) {
+            if (this.level >= cp.level) {
+                targetScore = cp.score;
+                targetLevel = cp.level;
+                break;
+            }
         }
 
         this.score = targetScore;
@@ -245,7 +252,10 @@ export default class Game {
         } else if (this.level >= 100 && this.bossDefeated50 && !this.bossDefeated100 && !this.boss && this.bosses.length === 0) {
             this.boss = new Boss(this, 100);
             this.entities.push(this.boss);
-        } else if (this.level >= 300 && this.bossDefeated100 && !this.bossDefeated300 && !this.boss && this.bosses.length === 0) {
+        } else if (this.level >= 200 && this.bossDefeated100 && !this.bossDefeated200 && !this.boss && this.bosses.length === 0) {
+            this.boss = new Boss(this, 200);
+            this.entities.push(this.boss);
+        } else if (this.level >= 300 && this.bossDefeated200 && !this.bossDefeated300 && !this.boss && this.bosses.length === 0) {
             this.boss = new Boss(this, 300);
             this.entities.push(this.boss);
         } else if (this.level >= 490 && this.bossDefeated300 && !this.bossDefeated490 && !this.boss && this.bosses.length === 0) {
@@ -286,7 +296,7 @@ export default class Game {
 
         const activeBoss = this.boss || (this.bosses.length > 0 ? this.bosses[0] : null);
         if (activeBoss && !activeBoss.markedForDeletion) {
-            if (activeBoss.bossLevel === 7 || activeBoss.bossLevel === 50 || activeBoss.bossLevel === 100) {
+            if (activeBoss.bossLevel === 7 || activeBoss.bossLevel === 50 || activeBoss.bossLevel === 100 || activeBoss.bossLevel === 200) {
                 spawnSuppressed = true;
             } else if (activeBoss.bossLevel === 300 || activeBoss.bossLevel === 490) {
                 spawnReducedRate = 10; // 1/10th spawn rate
@@ -334,10 +344,14 @@ export default class Game {
 
                 const enemy = new Enemy(this, type);
 
-                // HP Scaling: +10% every 90 levels after 110
-                if (this.level >= 110) {
-                    const hpMult = 1 + (Math.floor((this.level - 110) / 90) + 1) * 0.1;
-                    enemy.hp *= hpMult;
+                // HP Scaling: Level 100+, every 20 levels
+                if (this.level >= 100) {
+                    const tiers = Math.floor((this.level - 100) / 20);
+                    if (type === 'NORMAL') {
+                        enemy.hp *= 1 + tiers * 0.25; // +25% per tier for normals
+                    } else {
+                        enemy.hp *= 1 + tiers * 0.20; // +20% per tier for others
+                    }
                     enemy.maxHp = enemy.hp;
                 }
 
@@ -408,20 +422,29 @@ export default class Game {
                         if (this.player.obliteratorAmmo < 3) {
                             this.player.obliteratorAmmo++;
                         }
+                        this.spawnFloatingText(drop.x, drop.y, '💣 OBLITERATOR!', '#ff0000');
+                        this.audio.playPickup();
                     } else if (drop.type === 'ARMOR_1') {
-                        if (!this.hasArmor1) {
-                            this.hasArmor1 = true;
-                            this.player.maxHpLevel = 1;
-                            this.player.maxHp = 150;
-                            this.player.hp = this.player.maxHp;
-                        }
+                        this.hasArmor1 = true;
+                        this.player.maxHp = 200;
+                        this.player.hp = this.player.maxHp;
+                        this.player.maxHpLevel = 1;
+                        this.spawnFloatingText(drop.x, drop.y, '🛡️ ARMADURA SUPERIOR!', '#00ff00');
+                        this.audio.playPickup();
                     } else if (drop.type === 'ARMOR_2') {
-                        if (!this.hasArmor2) {
-                            this.hasArmor2 = true;
-                            this.player.maxHpLevel = 2;
-                            this.player.maxHp = 200;
-                            this.player.hp = this.player.maxHp;
-                        }
+                        this.hasArmor2 = true;
+                        this.player.maxHp = 300;
+                        this.player.hp = this.player.maxHp;
+                        this.player.maxHpLevel = 2;
+                        this.spawnFloatingText(drop.x, drop.y, '🛡️ ARMADURA PARRUDA!', '#ffaa00');
+                        this.audio.playPickup();
+                    } else if (drop.type === 'ARMOR_3') {
+                        this.hasArmor3 = true;
+                        this.player.maxHp = Math.floor(this.player.maxHp * 1.5);
+                        this.player.hp = this.player.maxHp;
+                        this.player.maxHpLevel = 3;
+                        this.spawnFloatingText(drop.x, drop.y, '⚡ ARMADURA SUPREMA! ⚡', '#00ccff');
+                        this.audio.playPickup();
                     } else if (drop.type === 'SHIELD') {
                         this.player.shieldTimer = 15000;
                         this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, 'ESCUDO ATIVADO (15s)!', '#0ff');
@@ -487,6 +510,11 @@ export default class Game {
                             this.triggerRedmoonBarrage();
                         }
 
+                        // Critical Quintuple Explosion
+                        if (projectile.isCriticalQuintuple) {
+                            this.triggerQuintupleExplosion(entity.x + entity.width / 2, entity.y + entity.height / 2);
+                        }
+
                         projectile.markedForDeletion = true;
                     }
                 }
@@ -497,8 +525,15 @@ export default class Game {
         const currentBoss = this.boss;
         if (currentBoss && !currentBoss.markedForDeletion) {
             if (this.player && checkCollision(this.player, currentBoss)) {
-                const dmg = 50;
-                this.player.takeDamage(dmg);
+                // Dash collision: half player HP
+                if (currentBoss.isDashing) {
+                    const dashDmg = Math.floor(this.player.maxHp / 2);
+                    this.player.takeDamage(dashDmg);
+                    this.spawnFloatingText(this.player.x, this.player.y, `DASH CRUSH! -${dashDmg}`, '#ff00ff');
+                } else {
+                    const dmg = 50;
+                    this.player.takeDamage(dmg);
+                }
             }
             this.projectiles.forEach(projectile => {
                 if (currentBoss.markedForDeletion) return; // Boss already dead this frame
@@ -521,6 +556,9 @@ export default class Game {
 
                         if (projectile.isArc && Math.random() < 0.1428) {
                             this.triggerRedmoonBarrage();
+                        }
+                        if (projectile.isCriticalQuintuple) {
+                            this.triggerQuintupleExplosion(currentBoss.x + currentBoss.width / 2, currentBoss.y + currentBoss.height / 2);
                         }
 
                         projectile.markedForDeletion = true;
@@ -557,6 +595,9 @@ export default class Game {
 
                         if (projectile.isArc && Math.random() < 0.1428) {
                             this.triggerRedmoonBarrage();
+                        }
+                        if (projectile.isCriticalQuintuple) {
+                            this.triggerQuintupleExplosion(b.x + b.width / 2, b.y + b.height / 2);
                         }
 
                         projectile.markedForDeletion = true;
@@ -648,7 +689,7 @@ export default class Game {
         this.floatingTexts.forEach(ft => {
             this.ctx.save();
             this.ctx.globalAlpha = ft.alpha;
-            this.ctx.font = 'bold 14px Arial';
+            this.ctx.font = 'bold 28px Arial';
             this.ctx.fillStyle = ft.color;
             this.ctx.strokeStyle = 'black';
             this.ctx.lineWidth = 2;
@@ -684,7 +725,7 @@ export default class Game {
             // Continue Button (Multi-checkpoint: Lvl 20, 90, 290, 400)
             const continueBtn = document.getElementById('continue-btn');
             const continueCount = document.getElementById('continue-count');
-            if (continueBtn && this.level >= 20 && this.continuesRemaining > 0) {
+            if (continueBtn && this.level >= 7 && this.continuesRemaining > 0) {
                 continueBtn.classList.remove('hidden');
                 if (continueCount) continueCount.innerText = this.continuesRemaining;
             } else if (continueBtn) {
@@ -716,8 +757,95 @@ export default class Game {
             // Change restart button text
             const restartBtn = document.getElementById('restart-btn');
             if (restartBtn) restartBtn.textContent = 'JOGAR NOVAMENTE';
+
+            // Hide continue button on victory
+            const continueBtn = document.getElementById('continue-btn');
+            if (continueBtn) continueBtn.classList.add('hidden');
         }
-        this.audio.playVictory();
+
+        // Play long victory music
+        this.audio.playVictoryLong();
+
+        // Fireworks animation on canvas
+        this.startFireworks();
+    }
+
+    startFireworks() {
+        const fireworks = [];
+        const canvas = this.canvas;
+        const ctx = this.ctx;
+        let elapsed = 0;
+        const duration = 5000;
+
+        const spawnFirework = () => {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * (canvas.height * 0.6);
+            const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+            const particles = [];
+            for (let i = 0; i < 30; i++) {
+                const angle = (Math.PI * 2 / 30) * i;
+                const speed = 2 + Math.random() * 3;
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 800 + Math.random() * 400,
+                    maxLife: 1200,
+                    color: color
+                });
+            }
+            fireworks.push(...particles);
+        };
+
+        let lastTime = performance.now();
+        const animate = (time) => {
+            const dt = time - lastTime;
+            lastTime = time;
+            elapsed += dt;
+
+            // Spawn fireworks periodically
+            if (Math.random() < 0.1) spawnFirework();
+
+            // Semi-transparent black overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw particles
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                const p = fireworks[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05; // gravity
+                p.life -= dt;
+                if (p.life <= 0) {
+                    fireworks.splice(i, 1);
+                    continue;
+                }
+                const alpha = Math.max(0, p.life / p.maxLife);
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Victory text
+            ctx.save();
+            ctx.font = 'bold 48px Arial';
+            ctx.fillStyle = `hsl(${(elapsed / 10) % 360}, 100%, 70%)`;
+            ctx.textAlign = 'center';
+            ctx.shadowColor = ctx.fillStyle;
+            ctx.shadowBlur = 20;
+            ctx.fillText('🏆 VITÓRIA! 🏆', canvas.width / 2, canvas.height / 2);
+            ctx.restore();
+
+            if (elapsed < duration) {
+                requestAnimationFrame(animate);
+            }
+        };
+        requestAnimationFrame(animate);
     }
 
     spawnFloatingText(x, y, text, color) {
@@ -792,6 +920,36 @@ export default class Game {
         }
     }
 
+    triggerQuintupleExplosion(ex, ey) {
+        const radius = 960;
+        const explosionDamage = this.player ? this.player.damage * 5 : 50;
+
+        // Yellow explosion
+        this.explosions.push({
+            x: ex, y: ey, radius: radius,
+            currentRadius: 20,
+            color: 'rgba(255, 220, 50, ',
+            life: 1200, maxLife: 1200, alpha: 1
+        });
+        this.audio.playExplosion();
+
+        // Damage enemies in range
+        this.entities.forEach(entity => {
+            const dist = Math.hypot(
+                (entity.x + entity.width / 2) - ex,
+                (entity.y + entity.height / 2) - ey
+            );
+            if (dist <= radius) {
+                this.spawnFloatingText(entity.x + entity.width / 2, entity.y, `QUINTUPLE CRIT 💥 -${explosionDamage}`, '#ffdd00');
+                entity.takeDamage(explosionDamage);
+            }
+        });
+
+        if (this.player) {
+            this.spawnFloatingText(this.player.x, this.player.y, "⚡ CRITICAL QUINTUPLE! ⚡", "#ffdd00");
+        }
+    }
+
     triggerRedmoonBarrage() {
         // Redmoon Barrage: 3 Mega Explosions in random top-half locations
         for (let i = 0; i < 3; i++) {
@@ -806,6 +964,7 @@ export default class Game {
         if (boss.bossLevel === 7) this.bossDefeated7 = true;
         if (boss.bossLevel === 50) this.bossDefeated50 = true;
         if (boss.bossLevel === 100) this.bossDefeated100 = true;
+        if (boss.bossLevel === 200) this.bossDefeated200 = true;
         if (boss.bossLevel === 300) this.bossDefeated300 = true;
 
         if (boss.bossLevel === 490) {
@@ -1038,7 +1197,15 @@ export default class Game {
             }
         }
 
-        // 3. ARMOR 2: Level 90+, 1/120 chance
+        // 3. ARMOR 3: Level 150+, 1/50 chance
+        if (this.level >= 150 && !this.hasArmor3 && this.hasArmor2) {
+            if (random < (1 / 50)) {
+                this.createDrop(enemy.x, enemy.y, 'ARMOR_3');
+                return;
+            }
+        }
+
+        // 4. ARMOR 2: Level 90+, 1/120 chance
         if (this.level >= 90 && !this.hasArmor2 && this.hasArmor1) {
             if (random < (1 / 120)) {
                 this.createDrop(enemy.x, enemy.y, 'ARMOR_2');

@@ -116,6 +116,30 @@ export default class AudioManager {
         });
     }
 
+    // Música de Vitória Longa (4s triumphant celebration)
+    playVictoryLong() {
+        this.resume();
+        // Longer triumphant melody: C4 E4 G4 C5 E5 G5 C6 (with sustain)
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+        const durations = [0.4, 0.3, 0.3, 0.5, 0.3, 0.3, 0.8, 1.0];
+        let offset = 0;
+        notes.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + offset);
+            gain.gain.setValueAtTime(0, this.ctx.currentTime + offset);
+            gain.gain.linearRampToValueAtTime(0.12, this.ctx.currentTime + offset + 0.05);
+            gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + offset + durations[i] * 0.7);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + offset + durations[i]);
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(this.ctx.currentTime + offset);
+            osc.stop(this.ctx.currentTime + offset + durations[i]);
+            offset += durations[i] * 0.85; // Slight overlap
+        });
+    }
+
     // Som do Obliterador (Deep Rumble)
     playObliterator() {
         this.resume();
