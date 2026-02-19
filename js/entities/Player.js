@@ -36,7 +36,7 @@ export default class Player extends Entity {
         this.damageSequenceCount = 0;
     }
 
-    takeDamage(amount) {
+    takeDamage(amount, suppressText = false) {
         let finalDamage = amount;
 
         if (this.shieldTimer > 0) {
@@ -45,7 +45,7 @@ export default class Player extends Entity {
         }
 
         this.hp -= finalDamage;
-        if (finalDamage > 0) {
+        if (finalDamage > 0 && !suppressText) {
             this.game.spawnFloatingText(this.x + this.width / 2, this.y, `-${Math.floor(finalDamage)}`, '#ff4444');
 
             // Track Sequence

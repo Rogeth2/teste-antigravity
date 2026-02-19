@@ -406,7 +406,7 @@ export default class Enemy extends Entity {
             markedForDeletion: false,
             pulseTimer: 0,
             explodeRadius: 80,
-            explodeDamage: 25,
+            explodeDamage: 100,
             update(deltaTime) {
                 this.life -= deltaTime;
                 this.pulseTimer += deltaTime;

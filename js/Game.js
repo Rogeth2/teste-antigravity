@@ -689,7 +689,7 @@ export default class Game {
         this.floatingTexts.forEach(ft => {
             this.ctx.save();
             this.ctx.globalAlpha = ft.alpha;
-            this.ctx.font = 'bold 28px Arial';
+            this.ctx.font = ft.fontSize ? `bold ${ft.fontSize}px Arial` : 'bold 28px Arial';
             this.ctx.fillStyle = ft.color;
             this.ctx.strokeStyle = 'black';
             this.ctx.lineWidth = 2;
@@ -848,7 +848,20 @@ export default class Game {
         requestAnimationFrame(animate);
     }
 
-    spawnFloatingText(x, y, text, color) {
+    spawnFloatingText(x, y, text, color, fontSize = null, uniqueId = null) {
+        if (uniqueId) {
+            const existing = this.floatingTexts.find(ft => ft.uniqueId === uniqueId);
+            if (existing) {
+                existing.text = text;
+                existing.x = x;
+                existing.y = y;
+                existing.life = 800; // Reset life
+                existing.alpha = 1;
+                if (color) existing.color = color;
+                if (fontSize) existing.fontSize = fontSize;
+                return;
+            }
+        }
         this.floatingTexts.push({
             x: x + (Math.random() - 0.5) * 20,
             y: y,
@@ -856,7 +869,9 @@ export default class Game {
             color: color,
             life: 800,
             maxLife: 800,
-            alpha: 1
+            alpha: 1,
+            fontSize: fontSize,
+            uniqueId: uniqueId
         });
     }
 

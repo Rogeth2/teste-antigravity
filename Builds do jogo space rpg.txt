@@ -96,6 +96,9 @@ No background, faça aparecer aleatóriamente, a cada 20 levels plano de fundo e
 Após ter a vida reduzida para 30HP, coloque a chance de 1/40 de ao matar um inimigo, dropar um "escudo" (uma aura circular, de raio 90px, ligeiramente transparente)adquirindo o mesmo quando tocar o item perdido no "espaço" e ativar um imunidade de 100% de dano durante 5s e reduzir para 50% de imunidade durante mais 5s, se encerrando logo em seguida.
 
 
+
+
+
 > implemente melhorias no jogo:
 Os bosses que tem tiro seguidor, esses tiros irão desaparecer também quando o boss for derrotado, além disso fazer com que o tiro seguidor dos bosses sigam por 8s apenas.
 Mude o drop "escudo" para aparecer após ter a vida reduzida para 50HP, e mude a chance de aparecer para 1/20 de ao matar um inimigo e mantenha as demais caracteristicas desse drop.
@@ -141,6 +144,8 @@ Aumente para 800 o HP do sub boss e retire a recompensa de 500 créditos ao mata
 Diminua para 500 0 HP do sub boss e a partir do level 20 aplicar a chance de aparecer apenas um desse inimigo de 1/100, além disso para esse inimigo não aplicar velocidade progressiva(mantenha sempre a velocidade base)
 Adicione a recompensa de 200 créditos ao matar o sub boss.
 Mude o drop "escudo" para aparecer após ter a vida reduzida para 50HP, e mude a chance de aparecer para 1/10 de ao matar um inimigo e alterar a imunidade de 100% de dano agora durante 20s se encerrando logo em seguida.
+
+	
 
 
 > Balanceamento e melhorias
@@ -204,4 +209,26 @@ limite em 7 vezes, a compra de "Engine boost" no "shop", quando for clicado para
 > Ajuste
 No background, faça aparecer aleatóriamente, durante todo o jogo, mas em quantidade 80% menos plano de fundo em movimento de galaxias e nebulosas, com cores variadas e aleatórias.
 
+> Grande atualização, ajustes e melhorias
+Faça com que os inimigos "BOMBER" , surja tbm na faixa central e na faixa inferior de tela com a mesma mecânica da parte superior(topo)
+A partir do nível 100, aumente em 10% a resistência dos inimigos comuns e 7% a resistência dos demais inimigos(que dá tiro(shooter), seguidores, combinados, sub boss e o os tres novos inimigos(kamikaze, shielded e bomber)),a cada 20 niveis.
+Aumente a fonte da informação dada de danos, tanto nos inimigos com no player em 2x, o mesmo vale para quaisquer outra informações de drop, tiros e explosões criticos.
+Exclusivamente no "tiro quintuplo", faça com que 1/10 dos 40% pertencente ao tiro seguidor, cause uma explosão de cor amarelada, de raio 960px, com dano 5x maior em relação ao dano base.
+Estenda o sistema de checkpoint, com as mesmas caracteristicas após "morrer" agora nos levels 7, 49, 150, 200 e após derrotar todos os chefes.
+No nivel 200, crie um inimigo gigante(boss), chame-o de "Perseguidora Rainha" com 150000 de HP, sendo ela seguidor(mecânica dos inimigos seguidores comuns), com velocidade 30% maior em relação ao padrão e faça com que ela tbm dê tiros alternados em laser(com as mesmas caracteristicas do tiro laser do player) de duração de 0,2s, com dano de 5HP e seguidores triplos com intervalos variáveis de 3s á 5s, fazendo seguir por 5s. Faça com que a vida dele apareça permanentemente, inclusive mostrando a vida diminuindo. Quando o boss aparecer, zerar o aparecimento de todos os outros inimigos, até derrotar lo.
+Quando tiver reduzido a 30% da vida do boss "Perseguidora Rainha", faça com que ela dê um "dash"(uma aceleração onde a velocidade duplica), por 1,5s, e caso haja colisão durante esse "dash", não dar hit kill, e sim tirar metade da vida do player. Para ficar destacada essa parte, faça com que durante o "dash", o boss fique 50% transparente e que faça um rastro de velocidade nesse intervalo de tempo desse golpe. faça tbm com que ela dê esse dash a cada 3s.
+Após o level 150, crie uma chance  de 1/50 ao matar um inimigo presente na tela, dropar uma " terceira armadura superior" (novo aumento de vida máxima em 50% em relação ao ultimo upgrade), adquirindo o mesmo quando tocar o item perdido no "espaço" E após adquirir, zerar a chance de um novo drop. Quando adquirir esse aumento de vida máximo, mudar o design do minha nave, com aspecto mais proximo de uma verdadeira nave.
+No anuncio de vitoria após derrotar os gemeos, coloque uma "musiquinha" de comemoração mais longa, faça aparecer uma animação de "fogos de artificico" e não mostra mais a opção(botão) de "chances adicionais", apenas o botão de "começar uma nova partida".
 
+
+
+> Ajuste
+No boss "Perseguidora Rainha", reduza o tempo de ação do seu tiro laser para 0,2s e o dano para 5HP. Além disso faça com esse boss utilize esse tiro laser em um intervalo variado de 8s a 15s. Mantenhas as demais caracteristicas desse boss
+A partir do nível 100, altere o aumento em relação ao dano base, que era de 10%, para 25% a resistência dos inimigos comuns e altere de 7% para 20% a resistência dos demais inimigos(que dá tiro(shooter), seguidores, combinados, sub boss e o os tres novos inimigos(kamikaze, shielded e bomber)),a cada 20 niveis.
+
+Triplique o dano de tiro de todos os chefes. exceto da "Perseguidora Rainha", apenas, em relação a esse boss, fazer as mudanças ditas acima.
+
+
+> Ajuste
+
+Aumente o alcance do tiro laser(tamanho) do boss "Perseguidora Rainha" em 30% e também aumente o tempo de ação do seu tiro para 0,5s, mantendo as demais caracteristicas

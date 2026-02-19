@@ -1001,7 +1001,7 @@ class Enemy extends Entity {
             markedForDeletion: false,
             pulseTimer: 0,
             explodeRadius: 80,
-            explodeDamage: 25,
+            explodeDamage: 100,
             update(deltaTime) {
                 this.life -= deltaTime;
                 this.pulseTimer += deltaTime;
@@ -1067,7 +1067,7 @@ class Player extends Entity {
         this.damageSequenceCount = 0;
     }
 
-    takeDamage(amount) {
+    takeDamage(amount, suppressText = false) {
         let finalDamage = amount;
 
         if (this.shieldTimer > 0) {
@@ -1076,7 +1076,7 @@ class Player extends Entity {
         }
 
         this.hp -= finalDamage;
-        if (finalDamage > 0) {
+        if (finalDamage > 0 && !suppressText) {
             this.game.spawnFloatingText(this.x + this.width / 2, this.y, `-${Math.floor(finalDamage)}`, '#ff4444');
 
             // Track Sequence
@@ -1540,6 +1540,7 @@ class Boss extends Entity {
             this.laserTimer = 0;
             this.laserDuration = 500; // 0.5s
             this.laserAngle = 0;
+            this.laserHitCount = 0; // Track hits for text display
         }
 
         // Positioning
@@ -1652,14 +1653,24 @@ class Boss extends Entity {
                         const dy2 = py - ly;
                         const dot = dx2 * Math.cos(this.laserAngle) + dy2 * Math.sin(this.laserAngle);
                         if (dot > 0 && dot < laserLen) {
-                            this.game.player.takeDamage(5);
-                            this.game.spawnFloatingText(px, py, '-5 LASER', '#ff00ff');
+                            // Damage 1 HP per frame
+                            this.game.player.takeDamage(1, true); // true = suppress default text
+                            this.laserHitCount++;
+                            // Show large HITS counter
+                            this.game.spawnFloatingText(
+                                px, py - 50,
+                                `${this.laserHitCount} HITS`,
+                                '#ff00ff',
+                                56, // 2x font size (28 * 2)
+                                `boss200_laser_${this.id}` // Unique ID to update text
+                            );
                         }
                     }
                 }
                 if (this.laserTimer >= this.laserDuration) {
                     this.isLasering = false;
                     this.laserTimer = 0;
+                    this.laserHitCount = 0; // Reset
                 }
             }
         } else if (this.bossLevel === 300) {
@@ -1861,6 +1872,10 @@ class Boss extends Entity {
                 if (isPhase2 || isPhase3) {
                     p.homingTimer *= timeMult;
                 }
+                // Boss 100 (Aniquilador) < 20% HP Logic
+                if (isPhase3) {
+                    p.damage = 30; // 30HP for homing shots
+                }
             }
         }
     }
@@ -2028,7 +2043,10 @@ class Boss extends Entity {
         // Boss 50 Damage Buff at 20% HP
         const hpRatio = this.hp / this.maxHp;
         if (this.bossLevel === 50 && hpRatio <= 0.2) {
-            projectile.damage *= 5; // MASSIVE BUFF (5x)
+            projectile.damage = 40; // Fixed 40HP
+            projectile.speed *= 1.5; // +50% Speed
+            projectile.velocity.x = Math.cos(angle) * projectile.speed;
+            projectile.velocity.y = Math.sin(angle) * projectile.speed;
         }
         projectile.speed = speed;
         projectile.width = 6;
@@ -3382,7 +3400,7 @@ class Game {
         this.floatingTexts.forEach(ft => {
             this.ctx.save();
             this.ctx.globalAlpha = ft.alpha;
-            this.ctx.font = 'bold 28px Arial';
+            this.ctx.font = ft.fontSize ? `bold ${ft.fontSize}px Arial` : 'bold 28px Arial';
             this.ctx.fillStyle = ft.color;
             this.ctx.strokeStyle = 'black';
             this.ctx.lineWidth = 2;
@@ -3541,7 +3559,20 @@ class Game {
         requestAnimationFrame(animate);
     }
 
-    spawnFloatingText(x, y, text, color) {
+    spawnFloatingText(x, y, text, color, fontSize = null, uniqueId = null) {
+        if (uniqueId) {
+            const existing = this.floatingTexts.find(ft => ft.uniqueId === uniqueId);
+            if (existing) {
+                existing.text = text;
+                existing.x = x;
+                existing.y = y;
+                existing.life = 800; // Reset life
+                existing.alpha = 1;
+                if (color) existing.color = color;
+                if (fontSize) existing.fontSize = fontSize;
+                return;
+            }
+        }
         this.floatingTexts.push({
             x: x + (Math.random() - 0.5) * 20,
             y: y,
@@ -3549,7 +3580,9 @@ class Game {
             color: color,
             life: 800,
             maxLife: 800,
-            alpha: 1
+            alpha: 1,
+            fontSize: fontSize,
+            uniqueId: uniqueId
         });
     }
 

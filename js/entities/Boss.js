@@ -113,6 +113,7 @@ export default class Boss extends Entity {
             this.laserTimer = 0;
             this.laserDuration = 500; // 0.5s
             this.laserAngle = 0;
+            this.laserHitCount = 0; // Track hits for text display
         }
 
         // Positioning
@@ -225,14 +226,24 @@ export default class Boss extends Entity {
                         const dy2 = py - ly;
                         const dot = dx2 * Math.cos(this.laserAngle) + dy2 * Math.sin(this.laserAngle);
                         if (dot > 0 && dot < laserLen) {
-                            this.game.player.takeDamage(5);
-                            this.game.spawnFloatingText(px, py, '-5 LASER', '#ff00ff');
+                            // Damage 1 HP per frame
+                            this.game.player.takeDamage(1, true); // true = suppress default text
+                            this.laserHitCount++;
+                            // Show large HITS counter
+                            this.game.spawnFloatingText(
+                                px, py - 50,
+                                `${this.laserHitCount} HITS`,
+                                '#ff00ff',
+                                56, // 2x font size (28 * 2)
+                                `boss200_laser_${this.id}` // Unique ID to update text
+                            );
                         }
                     }
                 }
                 if (this.laserTimer >= this.laserDuration) {
                     this.isLasering = false;
                     this.laserTimer = 0;
+                    this.laserHitCount = 0; // Reset
                 }
             }
         } else if (this.bossLevel === 300) {
@@ -434,6 +445,10 @@ export default class Boss extends Entity {
                 if (isPhase2 || isPhase3) {
                     p.homingTimer *= timeMult;
                 }
+                // Boss 100 (Aniquilador) < 20% HP Logic
+                if (isPhase3) {
+                    p.damage = 30; // 30HP for homing shots
+                }
             }
         }
     }
@@ -601,7 +616,10 @@ export default class Boss extends Entity {
         // Boss 50 Damage Buff at 20% HP
         const hpRatio = this.hp / this.maxHp;
         if (this.bossLevel === 50 && hpRatio <= 0.2) {
-            projectile.damage *= 5; // MASSIVE BUFF (5x)
+            projectile.damage = 40; // Fixed 40HP
+            projectile.speed *= 1.5; // +50% Speed
+            projectile.velocity.x = Math.cos(angle) * projectile.speed;
+            projectile.velocity.y = Math.sin(angle) * projectile.speed;
         }
         projectile.speed = speed;
         projectile.width = 6;
