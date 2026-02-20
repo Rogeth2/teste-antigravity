@@ -613,19 +613,21 @@ export default class Boss extends Entity {
         projectile.isBossBeam = true;
         projectile.color = color;
         projectile.damage = (this.bossLevel === 200) ? 15 : 45; // 3x for all bosses except Rainha
-        // Boss 50 Damage Buff at 20% HP
-        const hpRatio = this.hp / this.maxHp;
-        if (this.bossLevel === 50 && hpRatio <= 0.2) {
-            projectile.damage = 40; // Fixed 40HP
-            projectile.speed *= 1.5; // +50% Speed
-            projectile.velocity.x = Math.cos(angle) * projectile.speed;
-            projectile.velocity.y = Math.sin(angle) * projectile.speed;
-        }
         projectile.speed = speed;
         projectile.width = 6;
         projectile.height = 6;
         projectile.velocity.x = Math.cos(angle) * speed;
         projectile.velocity.y = Math.sin(angle) * speed;
+
+        // Boss 50 Damage Buff at 20% HP (MUST be after velocity assignments)
+        const hpRatio = this.hp / this.maxHp;
+        if (this.bossLevel === 50 && hpRatio <= 0.2) {
+            projectile.damage = 40; // Fixed 40HP per projectile
+            const rageSpeed = speed * 1.5; // +50% Speed
+            projectile.speed = rageSpeed;
+            projectile.velocity.x = Math.cos(angle) * rageSpeed;
+            projectile.velocity.y = Math.sin(angle) * rageSpeed;
+        }
 
         // Beta Phase: 40% HP -> 20% chance of slow homing shots
         const isBeta = this.bossName.includes('BETA');

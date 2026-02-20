@@ -400,13 +400,19 @@ export default class Game {
         // Drops
         this.drops.forEach(drop => {
             drop.update(deltaTime);
-            if (this.player && checkCollision(this.player, drop)) {
-                if (drop.type === 'MINE') {
-                    // Mine explodes on contact!
+            if (!this.player) return;
+
+            if (drop.type === 'MINE') {
+                // Mine explodes on proximity (within explodeRadius) — NO AABB needed
+                const mx = drop.x + drop.width / 2;
+                const my = drop.y + drop.height / 2;
+                const px = this.player.x + this.player.width / 2;
+                const py = this.player.y + this.player.height / 2;
+                const dist = Math.hypot(px - mx, py - my);
+                if (dist <= drop.explodeRadius) {
                     drop.markedForDeletion = true;
                     this.explosions.push({
-                        x: drop.x + drop.width / 2,
-                        y: drop.y + drop.height / 2,
+                        x: mx, y: my,
                         radius: drop.explodeRadius,
                         currentRadius: 5,
                         color: 'rgba(255, 136, 0, ',
@@ -416,46 +422,46 @@ export default class Game {
                     this.spawnFloatingText(this.player.x, this.player.y, `-${drop.explodeDamage} 💣`, '#ff8800');
                     this.audio.playExplosion();
                     this.audio.playDamage();
-                } else {
-                    drop.markedForDeletion = true;
-                    if (drop.type === 'OBLITERATOR') {
-                        if (this.player.obliteratorAmmo < 3) {
-                            this.player.obliteratorAmmo++;
-                        }
-                        this.spawnFloatingText(drop.x, drop.y, '💣 OBLITERATOR!', '#ff0000');
-                        this.audio.playPickup();
-                    } else if (drop.type === 'ARMOR_1') {
-                        this.hasArmor1 = true;
-                        this.player.maxHp = 200;
-                        this.player.hp = this.player.maxHp;
-                        this.player.maxHpLevel = 1;
-                        this.spawnFloatingText(drop.x, drop.y, '🛡️ ARMADURA SUPERIOR!', '#00ff00');
-                        this.audio.playPickup();
-                    } else if (drop.type === 'ARMOR_2') {
-                        this.hasArmor2 = true;
-                        this.player.maxHp = 300;
-                        this.player.hp = this.player.maxHp;
-                        this.player.maxHpLevel = 2;
-                        this.spawnFloatingText(drop.x, drop.y, '🛡️ ARMADURA PARRUDA!', '#ffaa00');
-                        this.audio.playPickup();
-                    } else if (drop.type === 'ARMOR_3') {
-                        this.hasArmor3 = true;
-                        this.player.maxHp = Math.floor(this.player.maxHp * 1.5);
-                        this.player.hp = this.player.maxHp;
-                        this.player.maxHpLevel = 3;
-                        this.spawnFloatingText(drop.x, drop.y, '⚡ ARMADURA SUPREMA! ⚡', '#00ccff');
-                        this.audio.playPickup();
-                    } else if (drop.type === 'SHIELD') {
-                        this.player.shieldTimer = 15000;
-                        this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, 'ESCUDO ATIVADO (15s)!', '#0ff');
-                    } else if (drop.type === 'REPAIR') {
-                        this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
-                        this.healSpawnCooldown = 120000;
-                        this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
-                    }
-                    this.audio.playPickup();
-                    this.updateUI();
                 }
+            } else if (checkCollision(this.player, drop)) {
+                drop.markedForDeletion = true;
+                if (drop.type === 'OBLITERATOR') {
+                    if (this.player.obliteratorAmmo < 3) {
+                        this.player.obliteratorAmmo++;
+                    }
+                    this.spawnFloatingText(drop.x, drop.y, '💣 OBLITERATOR!', '#ff0000');
+                    this.audio.playPickup();
+                } else if (drop.type === 'ARMOR_1') {
+                    this.hasArmor1 = true;
+                    this.player.maxHp = 200;
+                    this.player.hp = this.player.maxHp;
+                    this.player.maxHpLevel = 1;
+                    this.spawnFloatingText(drop.x, drop.y, '🛡️ ARMADURA SUPERIOR!', '#00ff00');
+                    this.audio.playPickup();
+                } else if (drop.type === 'ARMOR_2') {
+                    this.hasArmor2 = true;
+                    this.player.maxHp = 300;
+                    this.player.hp = this.player.maxHp;
+                    this.player.maxHpLevel = 2;
+                    this.spawnFloatingText(drop.x, drop.y, '🛡️ ARMADURA PARRUDA!', '#ffaa00');
+                    this.audio.playPickup();
+                } else if (drop.type === 'ARMOR_3') {
+                    this.hasArmor3 = true;
+                    this.player.maxHp = Math.floor(this.player.maxHp * 1.5);
+                    this.player.hp = this.player.maxHp;
+                    this.player.maxHpLevel = 3;
+                    this.spawnFloatingText(drop.x, drop.y, '⚡ ARMADURA SUPREMA! ⚡', '#00ccff');
+                    this.audio.playPickup();
+                } else if (drop.type === 'SHIELD') {
+                    this.player.shieldTimer = 15000;
+                    this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, 'ESCUDO ATIVADO (15s)!', '#0ff');
+                } else if (drop.type === 'REPAIR') {
+                    this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
+                    this.healSpawnCooldown = 120000;
+                    this.spawnFloatingText(this.player.x + this.player.width / 2, this.player.y, '+30 HP (REPARO)', '#ff66aa');
+                }
+                this.audio.playPickup();
+                this.updateUI();
             }
         });
         this.drops = this.drops.filter(d => !d.markedForDeletion);
@@ -1118,7 +1124,7 @@ export default class Game {
                 break;
             case 'quintuple':
                 cost = 3000;
-                if (this.credits >= cost && this.player.weaponLevel < 5 && this.level >= 200) {
+                if (this.credits >= cost && this.player.weaponLevel < 5 && this.level >= 120) {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 5);
                     this.player.currentWeaponLevel = 5;
