@@ -15,6 +15,7 @@ export default class Player extends Entity {
         this.damage = 10;
         this.weaponLevel = 1;
         this.currentWeaponLevel = 1;
+        this.unlockedWeapons = [1]; // Track which weapon levels are actually purchased
         this.hasHoming = false;
         this.obliteratorAmmo = 0;
         this.maxHpLevel = 0; // 0, 1, 2
@@ -386,10 +387,9 @@ export default class Player extends Entity {
     }
 
     switchWeapon() {
-        if (this.weaponLevel <= 1) return;
-        this.currentWeaponLevel++;
-        if (this.currentWeaponLevel > this.weaponLevel) {
-            this.currentWeaponLevel = 1;
-        }
+        if (this.unlockedWeapons.length <= 1) return;
+        const currentIndex = this.unlockedWeapons.indexOf(this.currentWeaponLevel);
+        const nextIndex = (currentIndex + 1) % this.unlockedWeapons.length;
+        this.currentWeaponLevel = this.unlockedWeapons[nextIndex];
     }
 }

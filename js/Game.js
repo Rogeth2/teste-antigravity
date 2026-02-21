@@ -1089,6 +1089,9 @@ export default class Game {
                     if (this.player.weaponLevel < 3) {
                         this.credits -= cost;
                         this.player.weaponLevel++;
+                        if (!this.player.unlockedWeapons.includes(this.player.weaponLevel)) {
+                            this.player.unlockedWeapons.push(this.player.weaponLevel);
+                        }
                         purchased = true;
                         upgradeName = `Multi Shot (Lv ${this.player.weaponLevel})`;
                     }
@@ -1118,6 +1121,9 @@ export default class Game {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 4);
                     this.player.currentWeaponLevel = 4;
+                    if (!this.player.unlockedWeapons.includes(4)) {
+                        this.player.unlockedWeapons.push(4);
+                    }
                     purchased = true;
                     upgradeName = 'Laser Cannon';
                 }
@@ -1128,6 +1134,9 @@ export default class Game {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 5);
                     this.player.currentWeaponLevel = 5;
+                    if (!this.player.unlockedWeapons.includes(5)) {
+                        this.player.unlockedWeapons.push(5);
+                    }
                     purchased = true;
                     upgradeName = 'Quintuple Shot';
                 }
@@ -1138,6 +1147,9 @@ export default class Game {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 6);
                     this.player.currentWeaponLevel = 6;
+                    if (!this.player.unlockedWeapons.includes(6)) {
+                        this.player.unlockedWeapons.push(6);
+                    }
                     purchased = true;
                     upgradeName = 'Endgame redmoon-gun';
                 }

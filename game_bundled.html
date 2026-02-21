@@ -1227,6 +1227,7 @@ class Player extends Entity {
         this.damage = 10;
         this.weaponLevel = 1;
         this.currentWeaponLevel = 1;
+        this.unlockedWeapons = [1]; // Track which weapon levels are actually purchased
         this.hasHoming = false;
         this.obliteratorAmmo = 0;
         this.maxHpLevel = 0; // 0, 1, 2
@@ -1598,11 +1599,10 @@ class Player extends Entity {
     }
 
     switchWeapon() {
-        if (this.weaponLevel <= 1) return;
-        this.currentWeaponLevel++;
-        if (this.currentWeaponLevel > this.weaponLevel) {
-            this.currentWeaponLevel = 1;
-        }
+        if (this.unlockedWeapons.length <= 1) return;
+        const currentIndex = this.unlockedWeapons.indexOf(this.currentWeaponLevel);
+        const nextIndex = (currentIndex + 1) % this.unlockedWeapons.length;
+        this.currentWeaponLevel = this.unlockedWeapons[nextIndex];
     }
 }
 
@@ -3983,6 +3983,9 @@ class Game {
                     if (this.player.weaponLevel < 3) {
                         this.credits -= cost;
                         this.player.weaponLevel++;
+                        if (!this.player.unlockedWeapons.includes(this.player.weaponLevel)) {
+                            this.player.unlockedWeapons.push(this.player.weaponLevel);
+                        }
                         purchased = true;
                         upgradeName = `Multi Shot (Lv ${this.player.weaponLevel})`;
                     }
@@ -4012,6 +4015,9 @@ class Game {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 4);
                     this.player.currentWeaponLevel = 4;
+                    if (!this.player.unlockedWeapons.includes(4)) {
+                        this.player.unlockedWeapons.push(4);
+                    }
                     purchased = true;
                     upgradeName = 'Laser Cannon';
                 }
@@ -4022,6 +4028,9 @@ class Game {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 5);
                     this.player.currentWeaponLevel = 5;
+                    if (!this.player.unlockedWeapons.includes(5)) {
+                        this.player.unlockedWeapons.push(5);
+                    }
                     purchased = true;
                     upgradeName = 'Quintuple Shot';
                 }
@@ -4032,6 +4041,9 @@ class Game {
                     this.credits -= cost;
                     this.player.weaponLevel = Math.max(this.player.weaponLevel, 6);
                     this.player.currentWeaponLevel = 6;
+                    if (!this.player.unlockedWeapons.includes(6)) {
+                        this.player.unlockedWeapons.push(6);
+                    }
                     purchased = true;
                     upgradeName = 'Endgame redmoon-gun';
                 }
