@@ -278,17 +278,198 @@ export default class Enemy extends Entity {
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 1;
             ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
-        } else {
-            // Default triangle (NORMAL, FOLLOWER, SHOOTER, HYBRID, SUBBOSS)
-            ctx.fillStyle = this.color;
+        } else if (this.type === 'SUBBOSS') {
+            // Heavy Warship — gold/amber, large imposing design
+            const hw = this.width / 2;
+            const hh = this.height / 2;
+            ctx.shadowColor = '#ffaa00';
+            ctx.shadowBlur = 18;
+
+            // Main body (heavy hexagonal hull)
+            ctx.fillStyle = '#cc8800';
             ctx.beginPath();
-            ctx.moveTo(0, -this.height / 2);
-            ctx.lineTo(this.width / 2, this.height / 2);
-            ctx.lineTo(-this.width / 2, this.height / 2);
+            ctx.moveTo(0, -hh);           // nose
+            ctx.lineTo(hw * 0.4, -hh * 0.5);
+            ctx.lineTo(hw * 0.5, hh * 0.3);
+            ctx.lineTo(hw * 0.3, hh * 0.8);
+            ctx.lineTo(-hw * 0.3, hh * 0.8);
+            ctx.lineTo(-hw * 0.5, hh * 0.3);
+            ctx.lineTo(-hw * 0.4, -hh * 0.5);
             ctx.closePath();
             ctx.fill();
-            ctx.strokeStyle = 'white';
+            ctx.strokeStyle = '#ffe066';
+            ctx.lineWidth = 1.5;
             ctx.stroke();
+
+            // Left broad wing
+            ctx.fillStyle = '#aa6600';
+            ctx.beginPath();
+            ctx.moveTo(-hw * 0.4, -hh * 0.3);
+            ctx.lineTo(-hw, -hh * 0.6);
+            ctx.lineTo(-hw * 0.9, hh * 0.4);
+            ctx.lineTo(-hw * 0.5, hh * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Right broad wing
+            ctx.beginPath();
+            ctx.moveTo(hw * 0.4, -hh * 0.3);
+            ctx.lineTo(hw, -hh * 0.6);
+            ctx.lineTo(hw * 0.9, hh * 0.4);
+            ctx.lineTo(hw * 0.5, hh * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Left engine pod
+            ctx.fillStyle = '#885500';
+            ctx.fillRect(-hw * 0.85, hh * 0.1, hw * 0.2, hh * 0.35);
+            ctx.strokeRect(-hw * 0.85, hh * 0.1, hw * 0.2, hh * 0.35);
+
+            // Right engine pod
+            ctx.fillRect(hw * 0.65, hh * 0.1, hw * 0.2, hh * 0.35);
+            ctx.strokeRect(hw * 0.65, hh * 0.1, hw * 0.2, hh * 0.35);
+
+            // Cockpit (armored dome)
+            ctx.fillStyle = '#ffdd66';
+            ctx.beginPath();
+            ctx.arc(0, -hh * 0.15, hh * 0.18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+
+            // Center thruster
+            ctx.fillStyle = `rgba(255, 170, 0, ${0.5 + Math.random() * 0.4})`;
+            ctx.beginPath();
+            ctx.moveTo(-hw * 0.15, hh * 0.8);
+            ctx.lineTo(0, hh + Math.random() * 10);
+            ctx.lineTo(hw * 0.15, hh * 0.8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Side thruster left
+            ctx.fillStyle = `rgba(255, 136, 0, ${0.4 + Math.random() * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(-hw * 0.8, hh * 0.45);
+            ctx.lineTo(-hw * 0.75, hh * 0.65 + Math.random() * 6);
+            ctx.lineTo(-hw * 0.7, hh * 0.45);
+            ctx.closePath();
+            ctx.fill();
+
+            // Side thruster right
+            ctx.beginPath();
+            ctx.moveTo(hw * 0.7, hh * 0.45);
+            ctx.lineTo(hw * 0.75, hh * 0.65 + Math.random() * 6);
+            ctx.lineTo(hw * 0.8, hh * 0.45);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+        } else {
+            // Spaceship designs for NORMAL, FOLLOWER, SHOOTER, HYBRID
+            const hw = this.width / 2;
+            const hh = this.height / 2;
+
+            let bodyColor, wingColor, cockpitColor, thrusterColor, glowColor;
+            let glowBlur = 10;
+
+            if (this.type === 'FOLLOWER') {
+                // Interceptor — magenta/purple
+                bodyColor = '#cc44cc';
+                wingColor = '#992299';
+                cockpitColor = '#ff88ff';
+                thrusterColor = [255, 100, 255];
+                glowColor = '#ff44ff';
+            } else if (this.type === 'SHOOTER') {
+                // Gunship — green
+                bodyColor = '#22aa22';
+                wingColor = '#116611';
+                cockpitColor = '#88ff88';
+                thrusterColor = [100, 255, 50];
+                glowColor = '#44ff44';
+            } else if (this.type === 'HYBRID') {
+                // Elite — white/silver/cyan
+                bodyColor = '#aabbcc';
+                wingColor = '#778899';
+                cockpitColor = '#88eeff';
+                thrusterColor = [150, 220, 255];
+                glowColor = '#66ddff';
+                glowBlur = 14;
+            } else {
+                // NORMAL — red fighter
+                bodyColor = '#cc2222';
+                wingColor = '#881111';
+                cockpitColor = '#ff6666';
+                thrusterColor = [255, 120, 40];
+                glowColor = '#ff4400';
+            }
+
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = glowBlur;
+
+            // Main body (elongated diamond)
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.moveTo(0, -hh);              // nose
+            ctx.lineTo(hw * 0.35, -hh * 0.2);
+            ctx.lineTo(hw * 0.3, hh * 0.6);
+            ctx.lineTo(0, hh * 0.8);
+            ctx.lineTo(-hw * 0.3, hh * 0.6);
+            ctx.lineTo(-hw * 0.35, -hh * 0.2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Left wing
+            ctx.fillStyle = wingColor;
+            ctx.beginPath();
+            ctx.moveTo(-hw * 0.3, -hh * 0.1);
+            ctx.lineTo(-hw, -hh * 0.5);
+            ctx.lineTo(-hw * 0.8, hh * 0.5);
+            ctx.lineTo(-hw * 0.3, hh * 0.4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Right wing
+            ctx.beginPath();
+            ctx.moveTo(hw * 0.3, -hh * 0.1);
+            ctx.lineTo(hw, -hh * 0.5);
+            ctx.lineTo(hw * 0.8, hh * 0.5);
+            ctx.lineTo(hw * 0.3, hh * 0.4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Weapon pods for SHOOTER and HYBRID
+            if (this.type === 'SHOOTER' || this.type === 'HYBRID') {
+                ctx.fillStyle = cockpitColor;
+                ctx.fillRect(-hw * 0.95, -hh * 0.15, hw * 0.2, hh * 0.3);
+                ctx.fillRect(hw * 0.75, -hh * 0.15, hw * 0.2, hh * 0.3);
+                ctx.strokeRect(-hw * 0.95, -hh * 0.15, hw * 0.2, hh * 0.3);
+                ctx.strokeRect(hw * 0.75, -hh * 0.15, hw * 0.2, hh * 0.3);
+            }
+
+            // Cockpit
+            ctx.fillStyle = cockpitColor;
+            ctx.beginPath();
+            ctx.arc(0, -hh * 0.15, hh * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Thruster glow
+            const tr = thrusterColor;
+            ctx.fillStyle = `rgba(${tr[0]}, ${tr[1]}, ${tr[2]}, ${0.5 + Math.random() * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(-hw * 0.12, hh * 0.8);
+            ctx.lineTo(0, hh + Math.random() * 6);
+            ctx.lineTo(hw * 0.12, hh * 0.8);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
         }
 
         ctx.restore();
